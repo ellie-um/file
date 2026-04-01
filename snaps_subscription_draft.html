@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[드래프트] 스냅스 - 구독 서비스 v0.1</title>
+<style>
+  :root {
+    --bg: #f5f4f2;
+    --card: #ffffff;
+    --accent: #ff5c35;
+    --accent2: #ff8c6b;
+    --text: #1a1a1a;
+    --sub: #666;
+    --border: #e5e5e5;
+    --p0: #ff5c35;
+    --p1: #f5a623;
+    --p2: #4a90d9;
+    --phase1: #e8f4fd;
+    --phase2: #fef9e7;
+    --phase3: #fdf2f8;
+    --phase4: #eafaf1;
+    --add: #eafaf1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  .top-bar { background: var(--accent); color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .top-bar .badge { background: rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .top-bar .title { font-size: 14px; font-weight: 700; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+
+  .doc-header { background: var(--card); border-radius: 12px; padding: 28px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+  .doc-header h1 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+  .doc-header .meta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .doc-header .meta span { font-size: 12px; color: var(--sub); background: var(--bg); padding: 4px 10px; border-radius: 20px; }
+  .summary-box { background: linear-gradient(135deg, #fff5f3, #fff); border: 1px solid #ffd0c5; border-radius: 8px; padding: 14px 18px; margin-top: 16px; }
+  .summary-box p { font-size: 14px; color: var(--accent); font-weight: 600; }
+
+  .section { background: var(--card); border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .section-title .icon { font-size: 16px; }
+
+  .phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  @media(max-width:600px){ .phase-grid, .scope-grid, .g2 { grid-template-columns: 1fr !important; } }
+  .phase-card { border-radius: 10px; padding: 16px; border: 1px solid var(--border); }
+  .phase-card.p1 { background: var(--phase1); border-color: #bee3f8; }
+  .phase-card.p2 { background: var(--phase2); border-color: #fdeeba; }
+  .phase-card.p3 { background: var(--phase3); border-color: #f9d6ed; }
+  .phase-card.p4 { background: var(--phase4); border-color: #b7e4c7; }
+  .phase-card .phase-num { font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; margin-bottom: 6px; }
+  .phase-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .phase-card ul { list-style: none; }
+  .phase-card ul li { font-size: 12px; color: var(--sub); padding: 2px 0; padding-left: 12px; position: relative; }
+  .phase-card ul li::before { content: '·'; position: absolute; left: 2px; }
+
+  .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .scope-do { background: #eafaf1; border-radius: 8px; padding: 14px; border: 1px solid #b7e4c7; }
+  .scope-dont { background: #fef9f9; border-radius: 8px; padding: 14px; border: 1px solid #f5c6c6; }
+  .scope-label { font-size: 12px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .scope-do .scope-label { color: #27ae60; }
+  .scope-dont .scope-label { color: #e74c3c; }
+  .scope-item { font-size: 12px; color: var(--sub); padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .scope-item:last-child { border-bottom: none; }
+
+  .policy-list { list-style: none; }
+  .policy-item { padding: 10px 14px; border-radius: 8px; background: var(--bg); margin-bottom: 8px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
+  .policy-num { background: var(--accent); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  .dev-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .dev-table th { background: var(--bg); padding: 8px 12px; text-align: left; font-weight: 600; color: var(--sub); border-bottom: 2px solid var(--border); }
+  .dev-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .dev-table tr:last-child td { border-bottom: none; }
+  .dev-table .sub-row td { padding-left: 32px; color: var(--sub); font-size: 11px; }
+  .badge-p0 { background: #fff0ed; color: var(--p0); font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .badge-p1 { background: #fef9e7; color: #d68910; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .badge-p2 { background: #eaf3fb; color: var(--p2); font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .badge-new { background: #f0eaf8; color: #8e44ad; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .badge-fe { background: #e8f8f5; color: #1abc9c; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-right: 3px; }
+  .badge-be { background: #f0eaf8; color: #8e44ad; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-right: 3px; }
+  .badge-ai { background: #fef5e7; color: #e67e22; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-right: 3px; }
+
+  .check-list { list-style: none; }
+  .check-item { padding: 10px 14px; background: #fffbf0; border-radius: 8px; margin-bottom: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; border-left: 3px solid var(--p1); }
+  .check-item.highlight { background: #fff0ed; border-left-color: var(--accent); }
+  .check-item .check-icon { color: var(--p1); font-size: 14px; flex-shrink: 0; }
+
+  .timeline { display: flex; gap: 12px; flex-wrap: wrap; }
+  .tl-card { flex: 1; min-width: 140px; background: var(--bg); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid var(--border); }
+  .tl-card .tl-phase { font-size: 11px; color: var(--sub); margin-bottom: 4px; }
+  .tl-card .tl-dur { font-size: 14px; font-weight: 700; color: var(--accent); }
+
+  .arch-note { background: #fff8f0; border: 1px solid #ffd0a0; border-radius: 8px; padding: 14px; margin-top: 12px; font-size: 12px; color: #a04000; }
+  .arch-note strong { display: block; margin-bottom: 4px; }
+
+  .ia-tree { font-family: 'SF Mono', 'Menlo', monospace; font-size: 11.5px; line-height: 1.9; background: var(--bg); border-radius: 10px; padding: 16px 20px; margin: 10px 0 16px; color: var(--sub); white-space: pre; overflow-x: auto; border: 1px solid var(--border); }
+  .ia-tree b { color: var(--text); font-weight: 700; }
+  .ia-tree .hl { color: var(--accent); font-weight: 600; }
+
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .ai-section { background: #f8f7ff; border: 1px solid #d0cbff; border-radius: 12px; padding: 22px; margin-top: 20px; }
+  .ai-title { font-size: 14px; font-weight: 700; color: #5b4fcf; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .ai-messages { max-height: 320px; overflow-y: auto; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .msg-user { align-self: flex-end; background: #5b4fcf; color: white; border-radius: 12px 12px 2px 12px; padding: 10px 14px; font-size: 13px; max-width: 80%; }
+  .msg-ai { align-self: flex-start; background: white; border: 1px solid #d0cbff; border-radius: 12px 12px 12px 2px; padding: 10px 14px; font-size: 13px; max-width: 85%; color: var(--text); white-space: pre-wrap; }
+  .msg-loading { align-self: flex-start; background: white; border: 1px solid #d0cbff; border-radius: 12px; padding: 10px 14px; font-size: 13px; color: var(--sub); }
+  .ai-input-row { display: flex; gap: 8px; }
+  .ai-input { flex: 1; border: 1px solid #d0cbff; border-radius: 8px; padding: 10px 14px; font-size: 13px; outline: none; background: white; font-family: inherit; resize: none; }
+  .ai-input:focus { border-color: #5b4fcf; }
+  .ai-send { background: #5b4fcf; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+  .ai-send:hover { background: #4a3db5; }
+  .ai-send:disabled { background: #a09ad0; cursor: not-allowed; }
+  .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .quick-btn { background: white; border: 1px solid #d0cbff; border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #5b4fcf; cursor: pointer; transition: all 0.2s; }
+  .quick-btn:hover { background: #5b4fcf; color: white; }
+
+  .notion-bar { background: var(--card); border-radius: 12px; padding: 18px 22px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); }
+  .notion-bar span { font-size: 13px; color: var(--sub); }
+  .notion-btn { background: #191919; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .notion-btn:hover { background: #333; }
+
+  /* IA leaf items */
+  .ia-leaf { font-size:11px; color:var(--sub); background:var(--bg); border:1px solid var(--border); border-radius:5px; padding:4px 8px; }
+
+  /* Flow diagram cards */
+  .flow-section { margin-bottom:24px; }
+  .flow-phase-label { font-size:12px; font-weight:700; padding:4px 10px; border-radius:5px; display:inline-block; margin-bottom:10px; }
+  .fpl-blue { background:var(--phase1); color:#1a5d9e; border:1px solid #bee3f8; }
+  .fpl-purple { background:#f3f0ff; color:#5b4fcf; border:1px solid #d0cbff; }
+  .fpl-green { background:var(--add); color:#27ae60; border:1px solid #b7e4c7; }
+  .fpl-coral { background:#fff5f3; color:#cc3300; border:1px solid #ffd0c5; }
+  .flow-arrow { text-align:center; color:#bbb; font-size:16px; line-height:20px; margin:4px 0; }
+  .fc { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 16px; text-align:center; margin-bottom:2px; }
+  .fc-title { font-size:13px; font-weight:700; color:var(--text); }
+  .fc-sub { font-size:11px; color:var(--sub); margin-top:3px; }
+  .fc-sub2 { font-size:10px; color:#999; margin-top:2px; }
+  .fc-blue { background:var(--phase1); border-color:#bee3f8; }
+  .fc-purple { background:#f3f0ff; border-color:#d0cbff; }
+  .fc-green { background:var(--add); border-color:#b7e4c7; }
+  .fc-coral { background:#fff5f3; border-color:#ffd0c5; }
+  .fc-amber { background:#fffbf0; border-color:#fdeeba; }
+  .fc-dashed { border-style:dashed; background:var(--bg); }
+  .fc .badge-tbd { background:#fffbf0; color:#d68910; font-size:10px; padding:1px 6px; border-radius:3px; border:1px solid #fdeeba; display:inline-block; margin-top:4px; }
+  .fc .badge-p0-sm { background:#fff0ed; color:var(--p0); font-size:10px; padding:1px 6px; border-radius:3px; border:1px solid #ffd0c5; display:inline-block; margin-top:4px; }
+  .fc .badge-new-sm { background:#f0eaf8; color:#8e44ad; font-size:10px; padding:1px 6px; border-radius:3px; border:1px solid #d0cbff; display:inline-block; margin-top:4px; }
+  .flow-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .flow-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .flow-grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; }
+  .flow-branch { text-align:center; font-size:11px; color:#999; margin:6px 0; display:flex; align-items:center; gap:6px; }
+  .flow-branch::before,.flow-branch::after { content:''; flex:1; border-top:1px solid var(--border); }
+  .flow-note { background:#fffbf0; border:1px dashed #fdeeba; border-radius:6px; padding:8px 12px; margin-top:6px; font-size:11px; color:#a87500; }
+  .flow-note strong { font-size:11px; }
+  .flow-policy-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; }
+  .flow-policy { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:10px; color:var(--sub); }
+  .flow-policy b { color:var(--text); font-weight:600; font-size:10px; }
+  .flow-tbd-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:6px; font-size:10px; color:var(--sub); }
+  @media(max-width:600px){ .flow-grid-2,.flow-grid-3,.flow-grid-4,.flow-policy-grid,.flow-tbd-grid { grid-template-columns:1fr !important; } }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="badge">DRAFT v0.1</span>
+    <span class="title">스냅스 · 구독 서비스 기획</span>
+  </div>
+  <span style="font-size:12px;opacity:0.8;">2026.03.31 · 최종 수정</span>
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <h1>[드래프트] 스냅스 — 포토북 구독 서비스</h1>
+    <div class="summary-box">
+      <p>📌 스마트폰 사진을 자동 분석해 월 1회 디지털 포토북을 생성하고, 요금제에 따라 실물 배송까지 제공하는 월정액 구독 서비스</p>
+    </div>
+    <div class="meta">
+      <span>🎯 서비스: 스냅스 (snaps.com)</span>
+      <span>📱 1차 타겟: 모바일 앱</span>
+      <span>👥 세그먼트: 포토북 잠재 고객 · 기념일 기록자</span>
+      <span>🔗 아키텍처: 스냅스 내 서비스, 분리 가능 모듈 구조</span>
+    </div>
+  </div>
+
+  <!-- 서비스 레퍼런스 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🔖</span> 서비스 레퍼런스</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:12px;">모바일 포토앨범 구독 서비스 기준 — UX 플로우·기능 구성·공유 모델 전반의 레퍼런스</div>
+    <div class="scope-grid">
+      <div style="background:#fff5f3;border-radius:10px;padding:16px;border:1px solid #ffd0c5;">
+        <div style="font-size:13px;font-weight:700;color:#cc3300;margin-bottom:6px;">패밀리앨범 (FamilyAlbum)</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:10px;">일본 최대 육아 포토앨범 앱 · 월정액 구독</div>
+        <div class="scope-item">자동 앨범 생성 + 연도별 정리 UX</div>
+        <div class="scope-item">가족 초대 → 공유 뷰어 (수신자 모델)</div>
+        <div class="scope-item">실물 포토북 주문 전환 CTA</div>
+        <div class="scope-item">구독 없이도 기본 사용 + 유료 전환 구조</div>
+      </div>
+      <div style="background:#f0faf5;border-radius:10px;padding:16px;border:1px solid #b7e4c7;">
+        <div style="font-size:13px;font-weight:700;color:#1a7a4a;margin-bottom:6px;">베베메모 (Bébé Mémo)</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:10px;">육아 기록 · 포토북 구독 앱</div>
+        <div class="scope-item">월별 자동 포토북 생성 (구독 모델)</div>
+        <div class="scope-item">최소 커스텀 (색상 + 제목 1줄) + 빠른 완성</div>
+        <div class="scope-item">조부모 등 가족 공유 → 실물 선물 주문</div>
+        <div class="scope-item">온보딩 이탈 최소화 설계</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 왜 해야 하나 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🔍</span> 왜 해야 하나?</div>
+    <div class="g2">
+      <div style="background:#fff5f3;border-radius:8px;padding:14px;border:1px solid #ffd0c5;">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;">사용자 문제</div>
+        <div class="scope-item">포토북 편집의 높은 진입 장벽 (시간/노력)</div>
+        <div class="scope-item">찍어만 두고 인화/제작 안 하는 사진들</div>
+        <div class="scope-item">기념할 순간을 놓치는 아쉬움</div>
+        <div class="scope-item">선물 대상(부모님 등)에게 직접 제작 어려움</div>
+      </div>
+      <div style="background:#f0f8ff;border-radius:8px;padding:14px;border:1px solid #bee3f8;">
+        <div style="font-size:12px;font-weight:700;color:#2980b9;margin-bottom:8px;">비즈니스 임팩트</div>
+        <div class="scope-item">구독 기반 반복 매출 → LTV 증대</div>
+        <div class="scope-item">일회성 구매자 → 장기 구독자 전환</div>
+        <div class="scope-item">공유 기능 → 바이럴 + 신규 고객 유입</div>
+        <div class="scope-item">CVR: 수신자의 실물 주문 전환 기대</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 서비스 단계 플로우 (상세 다이어그램) -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🗺️</span> 서비스 플로우 (단계별 상세)</div>
+
+    <!-- ===== PHASE 1 ===== -->
+    <div class="flow-section">
+      <div class="flow-phase-label fpl-blue">PHASE 1 · 구독 가입 &nbsp;<span style="font-weight:400;font-size:11px;">앱 진입 → 구독 활성화</span></div>
+
+      <div class="fc fc-blue"><div class="fc-title">1-1. 서비스 진입</div><div class="fc-sub">앱 내 구독 탭 / PC 웹은 앱 유도</div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="fc fc-blue"><div class="fc-title">1-2. 요금제 선택</div><div class="fc-sub">무료체험 포함, 3~4 티어</div></div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-grid-4">
+        <div class="fc fc-blue"><div class="fc-title">디지털</div><div class="fc-sub">월 2,900원</div><div class="fc-sub2">디지털 포토북</div></div>
+        <div class="fc fc-blue"><div class="fc-title">라이트</div><div class="fc-sub">월 5,900원</div><div class="fc-sub2">디지털 + 실물 매월</div></div>
+        <div class="fc fc-blue"><div class="fc-title">시즌</div><div class="fc-sub">월 3,900원</div><div class="fc-sub2">디지털 + 실물 분기</div></div>
+        <div class="fc fc-dashed"><div class="fc-title">무료 체험</div><div class="fc-sub">조건 미정</div><div class="badge-tbd">협의 필요</div></div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="fc fc-blue"><div class="fc-title">1-3. 결제 등록</div><div class="fc-sub">정기결제 수단 · 스냅스 PG 연동</div></div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-grid-2">
+        <div class="fc fc-blue"><div class="fc-title">1-4. 온보딩 설문</div><div class="fc-sub">카테고리 선택 (육아/여행/반려동물)</div><div class="fc-sub2">공유 대상자 사전 등록</div><div class="badge-new-sm">신규</div></div>
+        <div class="fc fc-blue"><div class="fc-title">1-5. 사진 접근 권한 동의</div><div class="fc-sub">iOS PHPhotoLibrary</div><div class="fc-sub2">Android READ_MEDIA_IMAGES</div></div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 2 ===== -->
+    <div class="flow-section">
+      <div class="flow-phase-label fpl-purple">PHASE 2 · 디지털 포토북 자동 생성 &nbsp;<span style="font-weight:400;font-size:11px;">AI 분석 → 발행</span></div>
+
+      <div class="fc fc-purple"><div class="fc-title">2-1. 사진 자동 분석</div><div class="fc-sub">중복/불량 제거 · 얼굴/장소/이벤트 감지</div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="fc fc-purple"><div class="fc-title">2-2. 사진 추천 · 큐레이션</div><div class="fc-sub">요금제별 사진 수 기준, 카테고리 그룹핑</div><div class="fc-sub2">베스트컷 선정 (웃는 얼굴/구도/채도)</div></div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-grid-2">
+        <div class="fc fc-purple"><div class="fc-title">2-3. 자동 디자인 구성</div><div class="fc-sub">내지 1타입 고정 (V1)</div><div class="fc-sub2">레이아웃 자동 배치 + 캡션 초안</div></div>
+        <div class="fc fc-purple"><div class="fc-title">2-4. 커버 커스텀</div><div class="fc-sub">색상 선택 + 텍스트 입력</div><div class="fc-sub2">기본값 자동 적용, 실시간 미리보기</div><div class="badge-p0-sm">P0</div></div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="fc fc-purple"><div class="fc-title">사용자 검토 및 수정 (선택)</div><div class="fc-sub">사진 교체 / 캡션 수정 / 레이아웃 조정 → 재생성 가능</div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="fc fc-purple"><div class="fc-title">2-5. 디지털 뷰어 생성 + 공유 링크</div><div class="fc-sub">앱 푸시 + 공유 대상자 자동 발송 트리거</div></div>
+
+      <div class="flow-note"><strong>협의 필요</strong> — 월 1회 고정일 자동 생성 OR 사진 N장 누적 시 트리거 · 사진 없으면 생성 건너뜀 + 알림</div>
+    </div>
+
+    <!-- ===== PHASE 3 ===== -->
+    <div class="flow-section">
+      <div class="flow-phase-label fpl-green">PHASE 3 · 실물 배송 &nbsp;<span style="font-weight:400;font-size:11px;">요금제별 분기</span></div>
+
+      <div class="flow-branch">요금제 분기</div>
+      <div class="flow-grid-3">
+        <div class="fc fc-green"><div class="fc-title">라이트</div><div class="fc-sub">미니포토북 매월 1권</div><div class="fc-sub2">자동 제작 · 무료 배송</div></div>
+        <div class="fc fc-green"><div class="fc-title">시즌</div><div class="fc-sub">미니포토북 분기 1권</div><div class="fc-sub2">3개월 1회 · 무료 배송</div></div>
+        <div class="fc fc-dashed"><div class="fc-title">디지털 / 무료체험</div><div class="fc-sub">실물 배송 없음</div><div class="fc-sub2">업그레이드 CTA 노출</div></div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-grid-3">
+        <div class="fc fc-green"><div class="fc-title">3-1. 배송 방식 결정</div><div class="fc-sub">자동 발주 vs 고객 확인 후</div><div class="badge-tbd">협의 필요</div></div>
+        <div class="fc fc-green"><div class="fc-title">3-2. POD 제작 발주</div><div class="fc-sub">스냅스 POD 파이프라인 연동</div></div>
+        <div class="fc fc-green"><div class="fc-title">3-3. 배송 처리</div><div class="fc-sub">구독 등록 주소 적용</div><div class="fc-sub2">현황 추적 푸시</div></div>
+      </div>
+    </div>
+
+    <!-- ===== PHASE 4 ===== -->
+    <div class="flow-section">
+      <div class="flow-phase-label fpl-coral">PHASE 4 · 공유 & 수신자 주문 &nbsp;<span style="font-weight:400;font-size:11px;">바이럴 루프</span></div>
+
+      <div class="flow-grid-2">
+        <div class="fc fc-coral"><div class="fc-title">구독자 → 공유 발송</div><div class="fc-sub">공유 대상자 사전 등록 (온보딩 시 설정)</div><div class="fc-sub2">생성 완료 시 자동 발송 (카카오 알림톡 우선, 문자 fallback)</div></div>
+        <div class="fc fc-coral"><div class="fc-title">대상자 추가/수정</div><div class="fc-sub">구독 설정 화면에서 관리</div><div class="fc-sub2">별명 지정 · 발송 ON/OFF 개별 설정</div></div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="fc fc-coral"><div class="fc-title">수신자 → 디지털 포토북 열람</div><div class="fc-sub">링크 클릭 → 비회원 웹뷰어 접근 (로그인 불필요)</div><div class="fc-sub2">페이지 넘김 인터랙션 · 동영상 재생 · Sticky CTA 상시 노출</div></div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-branch">실물 구매 전환 분기</div>
+      <div class="flow-grid-3">
+        <div class="fc" style="background:#e1f5ee;border-color:#1d9e75;"><div class="fc-title" style="color:#085041;">직접 주문</div><div class="fc-sub" style="color:#0f6e56;">수신자 직접 결제</div><div class="fc-sub2">배송지 입력 · 비회원 주문</div><div class="badge-tbd">계정 가입 여부 협의</div></div>
+        <div class="fc fc-amber"><div class="fc-title" style="color:#633806;">구독자 선물하기</div><div class="fc-sub" style="color:#854f0b;">구독자가 결제 후 발송</div><div class="fc-sub2">카카오 주소 연동</div></div>
+        <div class="fc fc-dashed"><div class="fc-title">열람만</div><div class="fc-sub">실물 주문 없이 종료</div><div class="fc-sub2">재방문 유도 알림 CTA</div></div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="fc" style="background:#e1f5ee;border:1px solid #1d9e75;"><div class="fc-title" style="color:#085041;">실물 포토북 제작 → 배송 완료</div><div class="fc-sub" style="color:#0f6e56;">스냅스 POD 파이프라인 연동</div></div>
+    </div>
+
+    <!-- 핵심 정책 요약 (하단) -->
+    <div style="margin-top:16px;">
+      <div class="flow-policy-grid">
+        <div class="flow-policy"><b>아키텍처</b> · 회원/DB 스냅스 공유, 서비스 로직 독립 모듈화</div>
+        <div class="flow-policy"><b>플랫폼</b> · 모바일 앱 메인 / PC는 안내+조회+앱 유도</div>
+        <div class="flow-policy"><b>커버 커스텀</b> · 색상 + 텍스트(P0) / 책등은 사양 확인 후</div>
+        <div class="flow-policy"><b>내지</b> · V1은 1타입 고정 / 레이아웃 선택은 V2+</div>
+      </div>
+
+      <div class="flow-note" style="margin-top:10px;">
+        <strong>협의 필요 항목 (9건)</strong>
+        <div class="flow-tbd-grid">
+          <div>1. 요금제 가격 및 티어 최종 확정</div>
+          <div>2. 무료 체험 기간/제한 조건</div>
+          <div>3. 포토북 생성 트리거 기준</div>
+          <div>4. 실물 배송: 자동 발주 vs 확인 후</div>
+          <div>5. 커버 책등 포함 여부 (사양 확인)</div>
+          <div>6. 사진 분석 AI: 자체 vs 외부 API</div>
+          <div>7. 수신자 주문 시 계정 가입 필수 여부</div>
+          <div>8. 포토북 내지 규격 (사이즈/페이지/종이)</div>
+          <div>9. 해지 리텐션 오퍼 정책</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scope -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📐</span> Scope</div>
+    <div class="scope-grid">
+      <div class="scope-do">
+        <div class="scope-label">✅ 이번에 하는 것</div>
+        <div class="scope-item">구독 가입/해지 플로우 (요금제 선택·결제)</div>
+        <div class="scope-item">사진 접근 권한 + 자동 분석 엔진</div>
+        <div class="scope-item">디지털 포토북 자동 생성 (AI 사진 추천)</div>
+        <div class="scope-item">디지털 뷰어 + 공유 링크</div>
+        <div class="scope-item">실물 배송 자동 트리거 (요금제 연동)</div>
+        <div class="scope-item">공유 대상자 사전 지정 + 자동 발송</div>
+        <div class="scope-item">수신자 → 실물 주문 플로우</div>
+        <div class="scope-item">커버 커스텀 (색상, 텍스트)</div>
+        <div class="scope-item">구독 대시보드 (관리·내역·설정)</div>
+        <div class="scope-item">PC 안내 + 내역 조회 + 앱 유도 페이지</div>
+      </div>
+      <div class="scope-dont">
+        <div class="scope-label">❌ 이번에 안 하는 것</div>
+        <div class="scope-item">내지 디자인 커스텀 (추후)</div>
+        <div class="scope-item">레이아웃 선택 기능 (추후)</div>
+        <div class="scope-item">책등 커스텀 (사양 확인 후 판단)</div>
+        <div class="scope-item">PC 풀 기능 (모바일 앱 우선)</div>
+        <div class="scope-item">별도 앱 분리 (1차는 스냅스 앱 내)</div>
+        <div class="scope-item">AI 엔진 자체 학습 고도화 (1차 외부 API)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 핵심 정책 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📋</span> 핵심 정책</div>
+    <ul class="policy-list">
+      <li class="policy-item"><span class="policy-num">1</span><span><strong>아키텍처:</strong> 회원/DB는 스냅스 공유, 서비스 로직은 독립 모듈. 추후 별도 앱 분리 시 최소 수정 구조 (네이버/네이버 스토어앱 모델)</span></li>
+      <li class="policy-item"><span class="policy-num">2</span><span><strong>요금제:</strong> 무료 체험 / 디지털 Basic / 실물 포함 Standard / 실물 프리미엄 — 3~4 티어, 상세 가격 협의 필요</span></li>
+      <li class="policy-item"><span class="policy-num">3</span><span><strong>생성 주기:</strong> 월 1회 자동 생성 (고정일 or 사진 N장 누적 기준, 협의 필요)</span></li>
+      <li class="policy-item"><span class="policy-num">4</span><span><strong>실물 배송:</strong> 자동 발주 OR 고객 최종 확인 후 발주 (협의 필요)</span></li>
+      <li class="policy-item"><span class="policy-num">5</span><span><strong>커버 커스텀:</strong> 색상 5~6색 팔레트 + 타이틀 1줄 (최대 20자) + 날짜 자동 표기. 실시간 미리보기. 책등은 사양 확인 후 결정 (P2)</span></li>
+      <li class="policy-item"><span class="policy-num">6</span><span><strong>공유 & 수신자:</strong> 수신자 목록 사전 등록 → 생성 시 자동 발송 (카카오 알림톡 우선). 수신자 실물 주문 시 계정 가입 여부 협의 필요</span></li>
+      <li class="policy-item"><span class="policy-num">7</span><span><strong>플랫폼 전략:</strong> 모바일 앱 메인. PC는 안내 + 내역 조회 + 앱 다운로드 유도만 제공</span></li>
+    </ul>
+    <div class="arch-note">
+      <strong>⚙️ 아키텍처 고려사항</strong>
+      스냅스 회원 연동 (SSO) + 독립 서비스 도메인 분리 가능 구조 → 서비스 DB 분리, API 게이트웨이 설계, 추후 별도 앱 패키지로 분리 가능하도록 초기 설계 반영 필요
+    </div>
+  </div>
+
+  <!-- 서비스 IA (비주얼) -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🏗️</span> IA · 구독 서비스 화면 구조 <span class="badge-new">신규</span></div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:14px;">구독 서비스의 전체 화면 구조. 모바일 앱 기준, PC 웹은 안내/조회/앱 유도만 제공.</div>
+
+    <!-- Root node -->
+    <div style="background:var(--phase1);border:1.5px solid #90c4f0;border-radius:8px;padding:10px 16px;text-align:center;font-size:14px;font-weight:700;color:#1a5d9e;margin-bottom:14px;">
+      스냅스 앱 → 구독 탭 (신규)
+    </div>
+
+    <!-- 5 columns: 구독홈 / 포토북라이브러리 / 구독관리 / 내역 / 설정 -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;">
+      <!-- 구독 홈 -->
+      <div>
+        <div class="ia-col-head" style="background:var(--phase1);border:1px solid #bee3f8;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">구독 홈</div>
+          <div style="font-size:10px;color:var(--sub);">대시보드</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #bee3f8;">
+          <div class="ia-leaf">구독 상태 배지 + 현재 요금제</div>
+          <div class="ia-leaf">다음 포토북 생성일 카운트다운</div>
+          <div class="ia-leaf">최근 포토북 썸네일 (빠른 접근)</div>
+          <div class="ia-leaf">알림 / 공유 발송 요약</div>
+        </div>
+      </div>
+      <!-- 포토북 라이브러리 -->
+      <div>
+        <div class="ia-col-head" style="background:var(--phase1);border:1px solid #bee3f8;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">포토북 라이브러리</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #bee3f8;">
+          <div class="ia-leaf">월별 디지털 포토북 리스트</div>
+          <div class="ia-leaf">포토북 상세 → 디지털 뷰어</div>
+          <div class="ia-leaf">포토북별 공유 / 실물 주문 CTA</div>
+        </div>
+      </div>
+      <!-- 구독 관리 -->
+      <div>
+        <div class="ia-col-head" style="background:var(--phase2);border:1px solid #fdeeba;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">구독 관리</div>
+          <div style="font-size:10px;color:var(--sub);">해지·변경</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #fdeeba;">
+          <div class="ia-leaf">요금제 변경 (업/다운그레이드)</div>
+          <div class="ia-leaf">결제 수단 변경</div>
+          <div class="ia-leaf">구독 해지 / 일시정지</div>
+          <div class="ia-leaf">해지 사유 수집 + 리텐션 오퍼</div>
+        </div>
+      </div>
+      <!-- 내역 -->
+      <div>
+        <div class="ia-col-head" style="background:var(--phase2);border:1px solid #fdeeba;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">내역</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #fdeeba;">
+          <div class="ia-leaf">디지털 포토북 발행 이력</div>
+          <div class="ia-leaf">실물 배송 현황 (스텝퍼)</div>
+          <div class="ia-leaf">결제 내역 리스트</div>
+          <div class="ia-leaf">공유 발송 이력</div>
+        </div>
+      </div>
+      <!-- 설정 -->
+      <div>
+        <div class="ia-col-head" style="background:var(--phase4);border:1px solid #b7e4c7;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">설정</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #b7e4c7;">
+          <div class="ia-leaf">공유 대상자 관리</div>
+          <div class="ia-leaf">자동 발송 ON/OFF</div>
+          <div class="ia-leaf">사진 접근 권한 관리</div>
+          <div class="ia-leaf">알림 설정</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 구독자 외 접근 화면 -->
+    <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">구독자 외 접근 화면</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+      <div style="background:#fff5f3;border:1px solid #ffd0c5;border-radius:8px;padding:14px;">
+        <div style="font-size:14px;font-weight:700;color:#cc3300;">수신자 웹 뷰어</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:4px;font-weight:600;">공유 링크 → 비회원 접근</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px;">페이지 넘김 · 동영상 · Sticky 실물 주문 CTA</div>
+      </div>
+      <div style="background:#fff5f3;border:1px solid #ffd0c5;border-radius:8px;padding:14px;">
+        <div style="font-size:14px;font-weight:700;color:#cc3300;">수신자 실물 주문</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:4px;font-weight:600;">상품 확인 → 배송지 → 결제</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px;">비회원 주문 지원 + 앱 다운로드 유도</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">PC 웹</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:4px;font-weight:600;">서비스 소개 랜딩</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px;">구독 내역 조회 + 앱 유도 (QR)</div>
+      </div>
+    </div>
+
+    <!-- 개발·디자인 추가 항목 : 구독 대시보드 세부 -->
+    <div style="font-size:12px;font-weight:700;color:#27ae60;margin-bottom:6px;">개발·디자인 추가 항목 · 구독 대시보드 세부</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <!-- 좌: 구독 관리 기능 -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--sub);margin-bottom:6px;"><span class="badge-fe" style="font-size:9px;">개발</span> 구독 관리 기능</div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:700;">요금제 업/다운그레이드</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">현재 요금제 ↔ 변경 요금제 비교 UI, 차액 정산 로직, 즉시 적용 vs 다음 결제일 적용</div>
+        </div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:700;">결제 수단 변경</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">PG 토큰 교체, 변경 후 다음 결제 시 신규 수단 적용</div>
+        </div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;">
+          <div style="font-size:13px;font-weight:700;">구독 해지 / 일시정지</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">해지 사유 수집 → 리텐션 오퍼 (할인/무료 연장) → 최종 확인 플로우</div>
+        </div>
+      </div>
+      <!-- 우: 내역 조회 기능 -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--sub);margin-bottom:6px;"><span class="badge-fe" style="font-size:9px;">개발</span> 내역 조회 기능</div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:700;">디지털 포토북 발행 이력</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">월별 타임라인, 썸네일 + 발행일, 뷰어 바로가기</div>
+        </div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:700;">실물 배송 현황</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">제작중 → 배송중 → 완료 스텝퍼, 송장번호 연동</div>
+        </div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:700;">결제 내역</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">월별 정기결제 리스트, 영수증 조회</div>
+        </div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;">
+          <div style="font-size:13px;font-weight:700;">공유 발송 이력</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">수신자별 발송 시간 · 열람 여부 · 실물 전환 여부</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 개발 범위 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">⚙️</span> 개발 범위</div>
+    <table class="dev-table">
+      <thead>
+        <tr><th style="width:60px;">우선순위</th><th>항목</th><th style="width:100px;">담당</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge-p0">P0</span></td><td>구독 가입/해지 플로우 (요금제 선택, 무료 체험, 결제)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>사진 접근 권한 (모바일 OS 권한) 및 자동 분석 엔진</td><td><span class="badge-be">BE</span><span class="badge-ai">AI</span></td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>디지털 포토북 자동 생성 (AI 사진 추천 + 레이아웃 구성)</td><td><span class="badge-be">BE</span><span class="badge-ai">AI</span></td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>디지털 포토북 뷰어 + 공유 링크 생성</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>실물 배송 자동 트리거 (요금제 조건 연동, POD 발주)</td><td><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>공유 대상자 사전 지정 + 생성 시 자동 발송 (푸시 + 링크)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>수신자 → 디지털 포토북 조회 + 실물 주문 플로우</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>커버 커스텀 UI (색상 선택, 텍스트 입력)</td><td><span class="badge-fe">FE</span></td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td><strong>구독 대시보드</strong> (구독 현황, 다음 생성일, 포토북 히스토리)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr class="sub-row"><td></td><td>└ 구독 관리 — 요금제 변경(업/다운그레이드), 결제 수단 변경, 구독 해지/일시정지, 해지 사유 수집 <span class="badge-new">신규</span></td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr class="sub-row"><td></td><td>└ 내역 조회 — 디지털 포토북 발행 이력, 실물 배송 현황(제작중/배송중/완료), 결제 내역, 공유 발송 이력 <span class="badge-new">신규</span></td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>PC 안내 페이지 + 내역 조회 + 앱 다운로드 유도</td><td><span class="badge-fe">FE</span></td></tr>
+        <tr><td><span class="badge-p2">P2</span></td><td>책등 커스텀 (사양 확인 후 개발 여부 결정)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p2">P2</span></td><td>별도 앱 분리 대비 서비스 모듈 분리 설계</td><td><span class="badge-be">BE</span></td></tr>
+        <tr><td><span class="badge-p2">P2</span></td><td>마케팅 동의 기반 개인화 프로모션 연동</td><td><span class="badge-be">BE</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 커버 커스텀 디자인 항목 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🎨</span> 커버 커스텀 — 디자인 항목</div>
+    <table class="dev-table">
+      <thead><tr><th>항목</th><th>내용</th><th style="width:70px;">우선순위</th></tr></thead>
+      <tbody>
+        <tr><td>색상 팔레트</td><td>5~6색 (크림/네이비/그레이/테라코타/포레스트 그린), 감성 중심 톤</td><td><span class="badge-p0">P0</span></td></tr>
+        <tr><td>커버 텍스트 UI</td><td>타이틀 1줄 입력 (최대 20자) + 날짜 자동 표기 선택</td><td><span class="badge-p0">P0</span></td></tr>
+        <tr><td>실시간 미리보기</td><td>선택·입력 즉시 반영, 앞면 기준</td><td><span class="badge-p0">P0</span></td></tr>
+        <tr><td>책등 가이드</td><td>제작 사양 확인 후 별도 작성</td><td><span class="badge-p2">P2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 디자인 범위 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🖌️</span> 디자인 범위 (UI/UX)</div>
+    <table class="dev-table">
+      <thead><tr><th style="width:60px;">우선순위</th><th>화면</th><th>요구사항</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge-p0">P0</span></td><td>구독 랜딩 / 요금제 선택</td><td>요금제 티어 비교 카드, 무료 체험 CTA — 전환율 직결</td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>온보딩 플로우</td><td>권한 동의 안내, 니즈 설문, 공유 대상자 등록 — 이탈 최소화</td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>디지털 포토북 뷰어</td><td>페이지 넘김, 전체화면, 실물 주문 Sticky CTA</td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>커버 커스텀 화면</td><td>색상 팔레트 + 텍스트 1줄 + 실시간 미리보기</td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>구독 대시보드 — 홈</td><td>구독 상태 배지, 현재 요금제, 다음 생성일 카운트다운, 최근 포토북 썸네일 <span class="badge-new">신규</span></td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>구독 대시보드 — 구독 관리</td><td>요금제 변경(업/다운그레이드 비교 UI), 결제 수단 변경, 해지 플로우(사유 수집 + 리텐션 CTA), 일시정지 <span class="badge-new">신규</span></td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>구독 대시보드 — 내역</td><td>디지털 포토북 타임라인, 실물 배송 스텝퍼(제작중→배송중→완료), 결제 내역, 공유 발송 이력 <span class="badge-new">신규</span></td></tr>
+        <tr><td><span class="badge-p0">P0</span></td><td>공유 발송 설정</td><td>수신자 목록 관리 (추가/삭제), 발송 이력 조회</td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>수신자 뷰어 (웹)</td><td>비회원 접근, 실물 주문 유도 CTA — 바이럴 진입점</td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>수신자 실물 주문</td><td>배송지 입력, 결제, 완료 화면 — CVR 핵심</td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>PC 안내 페이지</td><td>서비스 소개 + 앱 QR 다운로드 유도</td></tr>
+        <tr><td><span class="badge-p1">P1</span></td><td>알림 / 푸시</td><td>포토북 생성 완료, 배송 현황 알림 템플릿</td></tr>
+        <tr><td><span class="badge-p2">P2</span></td><td>내지 레이아웃 선택</td><td>추후 확장 시</td></tr>
+        <tr><td><span class="badge-p2">P2</span></td><td>책등 커스텀</td><td>사양 확인 후</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 협의 필요 항목 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🤝</span> 협의 필요 항목</div>
+    <ul class="check-list">
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>요금제 구성 및 가격 정책</strong> — 티어 수, 가격대, 무료 체험 기간·제한 조건</span></li>
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>포토북 생성 트리거 기준</strong> — 월 1회 고정 날짜 vs 사진 N장 이상 누적 시 vs 하이브리드</span></li>
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>실물 배송 방식</strong> — 자동 발주 (고객 확인 없이) vs 고객 최종 확인 후 발주</span></li>
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>커버 책등 포함 여부</strong> — 제작 사양 및 원가 확인 후 결정</span></li>
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>사진 분석 AI</strong> — 자체 개발 vs 외부 API (Google Photos API, Apple PhotoKit 등)</span></li>
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>수신자 주문 시 계정 가입 필수 여부</strong> — 비회원 주문 허용 범위</span></li>
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>포토북 내지 규격</strong> — 정확한 사이즈, 페이지 수, 종이 사양 확정 필요</span></li>
+      <li class="check-item"><span class="check-icon">⚠️</span><span><strong>스냅스 앱 내 UX 정합성</strong> — 기존 포토북 편집기와의 UI 일관성 전략</span></li>
+      <li class="check-item highlight"><span class="check-icon">🔥</span><span><strong>해지 리텐션 오퍼 정책</strong> <span class="badge-new">신규</span> — 해지 시도 시 제공할 할인율/무료 연장 기간, 리텐션 CTA 노출 조건, 일시정지 옵션 제공 여부</span></li>
+    </ul>
+  </div>
+
+  <!-- 예상 일정 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📅</span> 예상 일정</div>
+    <div class="timeline">
+      <div class="tl-card"><div class="tl-phase">드래프트 → 팀 싱크</div><div class="tl-dur">~1주</div></div>
+      <div class="tl-card"><div class="tl-phase">PRD 확정</div><div class="tl-dur">~2주</div></div>
+      <div class="tl-card"><div class="tl-phase">디자인</div><div class="tl-dur">~3~4주</div></div>
+      <div class="tl-card"><div class="tl-phase">개발 (P0~P1)</div><div class="tl-dur">~8~12주</div></div>
+      <div class="tl-card"><div class="tl-phase">QA → 오픈</div><div class="tl-dur">~2주</div></div>
+    </div>
+  </div>
+
+  <!-- Claude Inline Q&A -->
+  <div class="ai-section">
+    <div class="ai-title">🤖 Claude에게 물어보기 — 이 기획안 기반으로 질문하세요</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="askQuick('요금제 티어를 3개로 추천해줘. 가격대도 포함해서.')">요금제 티어 추천</button>
+      <button class="quick-btn" onclick="askQuick('수신자 주문 플로우 엣지케이스를 정리해줘.')">수신자 주문 엣지케이스</button>
+      <button class="quick-btn" onclick="askQuick('사진 AI 분석 외부 API 옵션을 비교해줘.')">AI 분석 API 비교</button>
+      <button class="quick-btn" onclick="askQuick('해지 리텐션 오퍼 정책을 구체적으로 제안해줘.')">해지 리텐션 정책</button>
+      <button class="quick-btn" onclick="askQuick('구독 서비스 주요 리스크와 대응 방안을 정리해줘.')">리스크 분석</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="msg-ai">안녕하세요! 스냅스 구독 서비스 드래프트 기획안을 기반으로 질문에 답변드릴게요. 위 빠른 질문을 클릭하거나 직접 입력해 주세요 💬</div>
+    </div>
+    <div class="ai-input-row">
+      <textarea class="ai-input" id="aiInput" rows="2" placeholder="질문을 입력하세요... (예: 요금제 구성 어떻게 할까? / 해지 방어 UX 제안해줘)"></textarea>
+      <button class="ai-send" id="aiSendBtn" onclick="sendAI()">전송</button>
+    </div>
+  </div>
+
+  <!-- Notion push bar -->
+  <div class="notion-bar">
+    <span>✅ 드래프트 검토 완료 후 Notion에 저장하려면 Claude 채팅창에 <strong>"노션에 저장해줘"</strong> 라고 입력하세요.</span>
+    <button class="notion-btn" onclick="notionPush()">📄 Notion에 저장</button>
+  </div>
+
+</div>
+
+<script>
+const SYSTEM = `당신은 스냅스(snaps.com)의 프로덕트 매니저를 보조하는 AI입니다.
+스냅스는 포토북과 굿즈를 중심으로 한 B2C POD(Print On Demand) 서비스입니다.
+
+현재 논의 중인 기획: 스냅스 포토북 구독 서비스 드래프트 v0.1
+- Phase 1: 구독 가입 (요금제 선택, 무료 체험, 온보딩 설문, 공유 대상자 사전 등록)
+- Phase 2: 디지털 포토북 자동 생성 (사진 접근권한 → AI 분석 → 포토북 생성 → 커버 커스텀)
+- Phase 3: 실물 배송 (실물 포함 요금제 자동 트리거, POD 파이프라인 연동)
+- Phase 4: 공유 & 수신자 주문 (자동 발송, 수신자 웹뷰어, 실물 직접 주문/선물하기)
+
+구독 대시보드 세부:
+- 구독 홈: 상태 배지, 요금제, 다음 생성일 카운트다운, 최근 포토북 썸네일
+- 구독 관리: 요금제 변경(업/다운그레이드), 결제 수단 변경, 해지/일시정지, 해지 사유 수집 + 리텐션 오퍼
+- 내역: 디지털 포토북 발행 이력, 실물 배송 현황(스텝퍼), 결제 내역, 공유 발송 이력
+- 설정: 공유 대상자 관리, 자동 발송 ON/OFF, 사진 권한 관리, 알림 설정
+
+제약사항:
+- 스냅스 앱 내 런칭 후 별도 앱 분리 가능 구조 필요 (회원/DB는 스냅스 공유)
+- 모바일 앱 타겟 (PC는 안내+내역 조회만)
+- 포토북 내지 1타입 규격 고정, 커버 커스텀: 색상 5~6색 팔레트 + 텍스트 1줄 (최대 20자) + 날짜 자동 표기
+- 책등 포함 여부 미정
+
+핵심 KPI: CVR (구매 전환율), Time to Purchase
+답변 스타일: 두괄식, 구체적인 정책/수치 우선, 비즈니스 임팩트+UX 관점 함께 제시`;
+
+const messages = [];
+
+async function sendAI(customText) {
+  const input = document.getElementById('aiInput');
+  const btn = document.getElementById('aiSendBtn');
+  const container = document.getElementById('aiMessages');
+  const text = customText || input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  btn.disabled = true;
+
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg-user';
+  userDiv.textContent = text;
+  container.appendChild(userDiv);
+
+  const loadDiv = document.createElement('div');
+  loadDiv.className = 'msg-loading';
+  loadDiv.textContent = '답변 생성 중...';
+  container.appendChild(loadDiv);
+  container.scrollTop = container.scrollHeight;
+
+  messages.push({ role: 'user', content: text });
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.find(b => b.type === 'text')?.text || '오류가 발생했습니다.';
+    messages.push({ role: 'assistant', content: reply });
+    loadDiv.className = 'msg-ai';
+    loadDiv.textContent = reply;
+  } catch(e) {
+    loadDiv.className = 'msg-ai';
+    loadDiv.textContent = '오류가 발생했습니다. 다시 시도해 주세요.';
+  }
+
+  btn.disabled = false;
+  container.scrollTop = container.scrollHeight;
+}
+
+function askQuick(q) {
+  document.getElementById('aiInput').value = q;
+  sendAI(q);
+}
+
+document.getElementById('aiInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAI(); }
+});
+
+function notionPush() {
+  alert('Claude 채팅창에 "노션에 저장해줘" 라고 입력해 주시면 바로 저장해드릴게요!');
+}
+</script>
+</body>
+</html>
