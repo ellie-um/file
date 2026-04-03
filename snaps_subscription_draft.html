@@ -230,9 +230,55 @@
     </div>
   </div>
 
-  <!-- 서비스 단계 플로우 (상세 다이어그램) -->
+  <!-- 서비스 플로우 -->
   <div class="section">
-    <div class="section-title"><span class="icon">🗺️</span> 서비스 플로우 (단계별 상세)</div>
+    <div class="section-title"><span class="icon">🗺️</span> 서비스 플로우</div>
+
+    <!-- 전체 흐름 Overview -->
+    <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;">전체 흐름 (Overview)</div>
+    <div class="phase-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="phase-card p1">
+        <div class="phase-num">Phase 1</div>
+        <h3>🔑 구독 가입</h3>
+        <ul>
+          <li>요금제 선택 (무료 체험 포함)</li>
+          <li>결제 등록</li>
+          <li>온보딩 설문 + 공유 대상자 등록</li>
+          <li>사진 접근 권한 동의</li>
+        </ul>
+      </div>
+      <div class="phase-card p2">
+        <div class="phase-num">Phase 2</div>
+        <h3>📸 디지털 포토북 자동 생성</h3>
+        <ul>
+          <li>사진 자동 분석 (내부 AI)</li>
+          <li>사진 추천·큐레이션</li>
+          <li>디자인 자동 구성 + 커버 커스텀</li>
+          <li>사용자 확인 후 발행</li>
+        </ul>
+      </div>
+      <div class="phase-card p3">
+        <div class="phase-num">Phase 3</div>
+        <h3>📦 실물 배송</h3>
+        <ul>
+          <li>요금제별 실물 배송 분기</li>
+          <li>POD 제작 발주</li>
+          <li>구독자 주소 자동 적용</li>
+        </ul>
+      </div>
+      <div class="phase-card p4">
+        <div class="phase-num">Phase 4</div>
+        <h3>🔗 공유 & 수신자 주문</h3>
+        <ul>
+          <li>공유 대상자 자동 발송</li>
+          <li>수신자 비회원 열람</li>
+          <li>수신자 실물 직접 주문</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 단계별 상세 다이어그램 -->
+    <div style="font-size:12px;font-weight:700;color:var(--sub);margin:20px 0 10px;padding-top:16px;border-top:1px solid var(--border);">단계별 상세 다이어그램</div>
 
     <!-- ===== PHASE 1 ===== -->
     <div class="flow-section">
@@ -404,208 +450,6 @@
       <strong>⚙️ 아키텍처 고려사항</strong>
       스냅스 회원 연동 (SSO) + 독립 서비스 도메인 분리 가능 구조 → 서비스 DB 분리, API 게이트웨이 설계, 추후 별도 앱 패키지로 분리 가능하도록 초기 설계 반영 필요
     </div>
-  </div>
-
-  <!-- 서비스 IA (비주얼) -->
-  <div class="section">
-    <div class="section-title"><span class="icon">🏗️</span> IA · 구독 서비스 화면 구조 <span class="badge-new">신규</span></div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:14px;">구독 서비스의 전체 화면 구조. 모바일 앱 기준, PC 웹은 안내/조회/앱 유도만 제공.</div>
-
-    <!-- Root node -->
-    <div style="background:var(--phase1);border:1.5px solid #90c4f0;border-radius:8px;padding:10px 16px;text-align:center;font-size:14px;font-weight:700;color:#1a5d9e;margin-bottom:14px;">
-      스냅스 앱 → 구독 탭 (신규)
-    </div>
-
-    <!-- 5 columns: 구독홈 / 포토북라이브러리 / 구독관리 / 내역 / 설정 -->
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;">
-      <!-- 구독 홈 -->
-      <div>
-        <div class="ia-col-head" style="background:var(--phase1);border:1px solid #bee3f8;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;">구독 홈</div>
-          <div style="font-size:10px;color:var(--sub);">대시보드</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #bee3f8;">
-          <div class="ia-leaf">구독 상태 배지 + 현재 요금제</div>
-          <div class="ia-leaf">다음 포토북 생성일 카운트다운</div>
-          <div class="ia-leaf">최근 포토북 썸네일 (빠른 접근)</div>
-          <div class="ia-leaf">알림 / 공유 발송 요약</div>
-        </div>
-      </div>
-      <!-- 포토북 라이브러리 -->
-      <div>
-        <div class="ia-col-head" style="background:var(--phase1);border:1px solid #bee3f8;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;">포토북 라이브러리</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #bee3f8;">
-          <div class="ia-leaf">월별 디지털 포토북 리스트</div>
-          <div class="ia-leaf">포토북 상세 → 디지털 뷰어</div>
-          <div class="ia-leaf">포토북별 공유 / 실물 주문 CTA</div>
-        </div>
-      </div>
-      <!-- 구독 관리 -->
-      <div>
-        <div class="ia-col-head" style="background:var(--phase2);border:1px solid #fdeeba;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;">구독 관리</div>
-          <div style="font-size:10px;color:var(--sub);">해지·변경</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #fdeeba;">
-          <div class="ia-leaf">요금제 변경 (업/다운그레이드)</div>
-          <div class="ia-leaf">결제 수단 변경</div>
-          <div class="ia-leaf">구독 해지 / 일시정지</div>
-          <div class="ia-leaf">해지 사유 수집 + 리텐션 오퍼</div>
-        </div>
-      </div>
-      <!-- 내역 -->
-      <div>
-        <div class="ia-col-head" style="background:var(--phase2);border:1px solid #fdeeba;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;">내역</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #fdeeba;">
-          <div class="ia-leaf">디지털 포토북 발행 이력</div>
-          <div class="ia-leaf">실물 배송 현황 (스텝퍼)</div>
-          <div class="ia-leaf">결제 내역 리스트</div>
-          <div class="ia-leaf">공유 발송 이력</div>
-        </div>
-      </div>
-      <!-- 설정 -->
-      <div>
-        <div class="ia-col-head" style="background:var(--phase4);border:1px solid #b7e4c7;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;">설정</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid #b7e4c7;">
-          <div class="ia-leaf">공유 대상자 관리</div>
-          <div class="ia-leaf">자동 발송 ON/OFF</div>
-          <div class="ia-leaf">사진 접근 권한 관리</div>
-          <div class="ia-leaf">알림 설정</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 구독자 외 접근 화면 -->
-    <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">구독자 외 접근 화면</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
-      <div style="background:#fff5f3;border:1px solid #ffd0c5;border-radius:8px;padding:14px;">
-        <div style="font-size:14px;font-weight:700;color:#cc3300;">수신자 웹 뷰어</div>
-        <div style="font-size:12px;color:var(--sub);margin-top:4px;font-weight:600;">공유 링크 → 비회원 접근</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:4px;">페이지 넘김 · 동영상 · Sticky 실물 주문 CTA</div>
-      </div>
-      <div style="background:#fff5f3;border:1px solid #ffd0c5;border-radius:8px;padding:14px;">
-        <div style="font-size:14px;font-weight:700;color:#cc3300;">수신자 실물 주문</div>
-        <div style="font-size:12px;color:var(--sub);margin-top:4px;font-weight:600;">상품 확인 → 배송지 → 결제</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:4px;">비회원 주문 지원 + 앱 다운로드 유도</div>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;">
-        <div style="font-size:14px;font-weight:700;color:var(--text);">PC 웹</div>
-        <div style="font-size:12px;color:var(--sub);margin-top:4px;font-weight:600;">서비스 소개 랜딩</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:4px;">구독 내역 조회 + 앱 유도 (QR)</div>
-      </div>
-    </div>
-
-    <!-- 개발·디자인 추가 항목 : 구독 대시보드 세부 -->
-    <div style="font-size:12px;font-weight:700;color:#27ae60;margin-bottom:6px;">개발·디자인 추가 항목 · 구독 대시보드 세부</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <!-- 좌: 구독 관리 기능 -->
-      <div>
-        <div style="font-size:11px;font-weight:600;color:var(--sub);margin-bottom:6px;"><span class="badge-fe" style="font-size:9px;">개발</span> 구독 관리 기능</div>
-        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:700;">요금제 업/다운그레이드</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:3px;">현재 요금제 ↔ 변경 요금제 비교 UI, 차액 정산 로직, 즉시 적용 vs 다음 결제일 적용</div>
-        </div>
-        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:700;">결제 수단 변경</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:3px;">PG 토큰 교체, 변경 후 다음 결제 시 신규 수단 적용</div>
-        </div>
-        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;">
-          <div style="font-size:13px;font-weight:700;">구독 해지 / 일시정지</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:3px;">해지 사유 수집 → 리텐션 오퍼 (할인/무료 연장) → 최종 확인 플로우</div>
-        </div>
-      </div>
-      <!-- 우: 내역 조회 기능 -->
-      <div>
-        <div style="font-size:11px;font-weight:600;color:var(--sub);margin-bottom:6px;"><span class="badge-fe" style="font-size:9px;">개발</span> 내역 조회 기능</div>
-        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:700;">디지털 포토북 발행 이력</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:3px;">월별 타임라인, 썸네일 + 발행일, 뷰어 바로가기</div>
-        </div>
-        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:700;">실물 배송 현황</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:3px;">제작중 → 배송중 → 완료 스텝퍼, 송장번호 연동</div>
-        </div>
-        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:700;">결제 내역</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:3px;">월별 정기결제 리스트, 영수증 조회</div>
-        </div>
-        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;">
-          <div style="font-size:13px;font-weight:700;">공유 발송 이력</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:3px;">수신자별 발송 시간 · 열람 여부 · 실물 전환 여부</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 개발 범위 -->
-  <div class="section">
-    <div class="section-title"><span class="icon">⚙️</span> 개발 범위</div>
-    <table class="dev-table">
-      <thead>
-        <tr><th style="width:60px;">우선순위</th><th>항목</th><th style="width:100px;">담당</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><span class="badge-p0">P0</span></td><td>구독 가입/해지 플로우 (요금제 선택, 무료 체험, 결제)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>사진 접근 권한 (모바일 OS 권한) 및 자동 분석 엔진 (내부 AI)</td><td><span class="badge-be">BE</span><span class="badge-ai">AI</span></td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>디지털 포토북 자동 생성 (내부 AI 사진 추천 + 레이아웃 구성)</td><td><span class="badge-be">BE</span><span class="badge-ai">AI</span></td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>디지털 포토북 뷰어 + 공유 링크 생성</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>실물 배송 자동 트리거 (요금제 조건 연동, POD 발주)</td><td><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>공유 대상자 사전 지정 + 생성 시 자동 발송 (푸시 + 링크)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>수신자 → 디지털 포토북 조회 + 실물 주문 플로우</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>커버 커스텀 UI (색상 선택, 텍스트 입력)</td><td><span class="badge-fe">FE</span></td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td><strong>구독 대시보드</strong> (구독 현황, 다음 생성일, 포토북 히스토리)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr class="sub-row"><td></td><td>└ 구독 관리 — 요금제 변경(업/다운그레이드), 결제 수단 변경, 구독 해지/일시정지, 해지 사유 수집 <span class="badge-new">신규</span></td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr class="sub-row"><td></td><td>└ 내역 조회 — 디지털 포토북 발행 이력, 실물 배송 현황(제작중/배송중/완료), 결제 내역, 공유 발송 이력 <span class="badge-new">신규</span></td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>PC 안내 페이지 + 내역 조회 + 앱 다운로드 유도</td><td><span class="badge-fe">FE</span></td></tr>
-        <tr><td><span class="badge-p2">P2</span></td><td>책등 커스텀 (사양 확인 후 개발 여부 결정)</td><td><span class="badge-fe">FE</span><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p2">P2</span></td><td>별도 앱 분리 대비 서비스 모듈 분리 설계</td><td><span class="badge-be">BE</span></td></tr>
-        <tr><td><span class="badge-p2">P2</span></td><td>마케팅 동의 기반 개인화 프로모션 연동</td><td><span class="badge-be">BE</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 커버 커스텀 디자인 항목 -->
-  <div class="section">
-    <div class="section-title"><span class="icon">🎨</span> 커버 커스텀 — 디자인 항목</div>
-    <table class="dev-table">
-      <thead><tr><th>항목</th><th>내용</th><th style="width:70px;">우선순위</th></tr></thead>
-      <tbody>
-        <tr><td>색상 팔레트</td><td>5~6색 (크림/네이비/그레이/테라코타/포레스트 그린), 감성 중심 톤</td><td><span class="badge-p0">P0</span></td></tr>
-        <tr><td>커버 텍스트 UI</td><td>타이틀 1줄 입력 (최대 20자) + 날짜 자동 표기 선택</td><td><span class="badge-p0">P0</span></td></tr>
-        <tr><td>실시간 미리보기</td><td>선택·입력 즉시 반영, 앞면 기준</td><td><span class="badge-p0">P0</span></td></tr>
-        <tr><td>책등 가이드</td><td>제작 사양 확인 후 별도 작성</td><td><span class="badge-p2">P2</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 디자인 범위 -->
-  <div class="section">
-    <div class="section-title"><span class="icon">🖌️</span> 디자인 범위 (UI/UX)</div>
-    <table class="dev-table">
-      <thead><tr><th style="width:60px;">우선순위</th><th>화면</th><th>요구사항</th></tr></thead>
-      <tbody>
-        <tr><td><span class="badge-p0">P0</span></td><td>구독 랜딩 / 요금제 선택</td><td>요금제 티어 비교 카드, 무료 체험 CTA — 전환율 직결</td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>온보딩 플로우</td><td>권한 동의 안내, 니즈 설문, 공유 대상자 등록 — 이탈 최소화</td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>디지털 포토북 뷰어</td><td>페이지 넘김, 전체화면, 실물 주문 Sticky CTA</td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>커버 커스텀 화면</td><td>색상 팔레트 + 텍스트 1줄 + 실시간 미리보기</td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>구독 대시보드 — 홈</td><td>구독 상태 배지, 현재 요금제, 다음 생성일 카운트다운, 최근 포토북 썸네일 <span class="badge-new">신규</span></td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>구독 대시보드 — 구독 관리</td><td>요금제 변경(업/다운그레이드 비교 UI), 결제 수단 변경, 해지 플로우(사유 수집 + 리텐션 CTA), 일시정지 <span class="badge-new">신규</span></td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>구독 대시보드 — 내역</td><td>디지털 포토북 타임라인, 실물 배송 스텝퍼(제작중→배송중→완료), 결제 내역, 공유 발송 이력 <span class="badge-new">신규</span></td></tr>
-        <tr><td><span class="badge-p0">P0</span></td><td>공유 발송 설정</td><td>수신자 목록 관리 (추가/삭제), 발송 이력 조회</td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>수신자 뷰어 (웹)</td><td>비회원 접근, 실물 주문 유도 CTA — 바이럴 진입점</td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>수신자 실물 주문</td><td>배송지 입력, 결제, 완료 화면 — CVR 핵심</td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>PC 안내 페이지</td><td>서비스 소개 + 앱 QR 다운로드 유도</td></tr>
-        <tr><td><span class="badge-p1">P1</span></td><td>알림 / 푸시</td><td>포토북 생성 완료, 배송 현황 알림 템플릿</td></tr>
-        <tr><td><span class="badge-p2">P2</span></td><td>내지 레이아웃 선택</td><td>추후 확장 시</td></tr>
-        <tr><td><span class="badge-p2">P2</span></td><td>책등 커스텀</td><td>사양 확인 후</td></tr>
-      </tbody>
-    </table>
   </div>
 
   <!-- 협의 필요 항목 -->
