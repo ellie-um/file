@@ -194,6 +194,33 @@
       스냅스 앱 → 구독 탭 (신규)
     </div>
 
+    <!-- 핵심 플로우 화면 -->
+    <div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:8px;">핵심 플로우</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <!-- 요금제 가입 플로우 -->
+      <div style="background:#fff5f3;border:1px solid #ffd0c5;border-radius:10px;padding:14px;">
+        <div style="font-size:13px;font-weight:700;color:#cc3300;margin-bottom:8px;">요금제 가입 플로우</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div class="ia-leaf">요금제 선택 (디지털/라이트/시즌/무료체험)</div>
+          <div class="ia-leaf">결제 등록</div>
+          <div class="ia-leaf">온보딩 (커버 타입 선택 + 공유 대상자 등록)</div>
+          <div class="ia-leaf">사진 접근 권한 동의</div>
+        </div>
+      </div>
+      <!-- 디지털 포토북 만들기 플로우 -->
+      <div style="background:#f3f0ff;border:1px solid #d0cbff;border-radius:10px;padding:14px;">
+        <div style="font-size:13px;font-weight:700;color:#5b4fcf;margin-bottom:8px;">디지털 포토북 만들기 플로우</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div class="ia-leaf">사진 분석 · 클러스터링 · 큐레이션 (내부 AI)</div>
+          <div class="ia-leaf">자동 디자인 구성 + 커버 커스텀</div>
+          <div class="ia-leaf">사용자 확인 → 발행</div>
+          <div class="ia-leaf">디지털 뷰어 생성 + 공유 링크 자동 발송</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 구독 관리 화면 (5 columns) -->
+    <div style="font-size:11px;font-weight:600;color:var(--sub);margin-bottom:8px;">구독 관리 화면</div>
     <!-- 5 columns: 구독홈 / 포토북라이브러리 / 구독관리 / 내역 / 설정 -->
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;">
       <!-- 구독 홈 -->
@@ -218,6 +245,8 @@
           <div class="ia-leaf">월별 디지털 포토북 리스트</div>
           <div class="ia-leaf">포토북 상세 → 디지털 뷰어</div>
           <div class="ia-leaf">포토북별 공유 / 실물 주문 CTA</div>
+          <div class="ia-leaf">추가 공유 (카톡공유/링크복사 → 미리보기 페이지)</div>
+          <div class="ia-leaf">추가 발송(배송) — 5,900원 배송비 포함 결제</div>
         </div>
       </div>
       <!-- 구독 관리 -->
@@ -231,6 +260,7 @@
           <div class="ia-leaf">결제 수단 변경</div>
           <div class="ia-leaf">구독 해지 / 일시정지</div>
           <div class="ia-leaf">해지 사유 수집 + 리텐션 오퍼</div>
+          <div class="ia-leaf">추가 실물 배송 설정 (대상자별 ON/OFF)</div>
         </div>
       </div>
       <!-- 내역 -->
@@ -275,12 +305,28 @@
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;">
         <div style="font-size:14px;font-weight:700;color:var(--text);">PC 웹</div>
         <div style="font-size:12px;color:var(--sub);margin-top:4px;font-weight:600;">서비스 소개 랜딩</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:4px;">구독 내역 조회 + 앱 유도 (QR)</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px;">앱 다운로드 유도 (랜딩만 제공)</div>
       </div>
     </div>
 
     <!-- 개발·디자인 추가 항목 : 구독 대시보드 세부 -->
     <div style="font-size:12px;font-weight:700;color:#27ae60;margin-bottom:6px;">개발·디자인 추가 항목 · 구독 대시보드 세부</div>
+
+    <!-- 라이브러리 기능 -->
+    <div style="font-size:11px;font-weight:600;color:var(--sub);margin-bottom:6px;"><span class="badge-fe" style="font-size:9px;">개발</span> 라이브러리 기능</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:#f0f8ff;border:1px solid #bee3f8;border-radius:8px;padding:12px;">
+        <div style="font-size:13px;font-weight:700;">추가 공유</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:3px;">포토북 상세에서 추가 공유 버튼 탭 → 카카오톡 공유하기 / 링크 복사하기 팝업 → 포토북 미리보기 페이지 URL 공유</div>
+        <div style="font-size:10px;color:#999;margin-top:4px;">자동 발송 외에 수동으로 추가 공유할 때 사용</div>
+      </div>
+      <div style="background:#fff5f3;border:1px solid #ffd0c5;border-radius:8px;padding:12px;">
+        <div style="font-size:13px;font-weight:700;">추가 발송 (배송)</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:3px;">포토북 선택 → 추가 발송 버튼 → 배송지 입력/선택 → <strong style="color:var(--accent);">5,900원 결제 (배송비 포함)</strong> → 실물 포토북 추가 제작·배송</div>
+        <div style="font-size:10px;color:#999;margin-top:4px;">구독 요금제 포함 배송과 별도. 원하는 포토북을 추가로 실물 주문하는 기능</div>
+      </div>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <!-- 좌: 구독 관리 기능 -->
       <div>
@@ -296,6 +342,10 @@
         <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;">
           <div style="font-size:13px;font-weight:700;">구독 해지 / 일시정지</div>
           <div style="font-size:11px;color:var(--sub);margin-top:3px;">해지 사유 수집 → 리텐션 오퍼 (할인/무료 연장) → 최종 확인 플로우</div>
+        </div>
+        <div style="background:#eafaf1;border:1px solid #b7e4c7;border-radius:8px;padding:12px;">
+          <div style="font-size:13px;font-weight:700;">추가 실물 배송 설정</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px;">자동 발송 대상자별 실물 배송 ON/OFF 설정. 설정 시 매월 포토북 발행 시 해당 대상자에게 자동으로 실물 배송 (5,900원/건 결제)</div>
         </div>
       </div>
       <!-- 우: 내역 조회 기능 -->
