@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포토북 구독서비스 — 기술 설계 제안서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --surface: #FFFFFF;
+    --surface-alt: #F5F3EF;
+    --text: #1C1917;
+    --text-secondary: #57534E;
+    --text-tertiary: #A8A29E;
+    --accent: #2563EB;
+    --accent-light: #DBEAFE;
+    --accent-dark: #1E40AF;
+    --danger: #DC2626;
+    --danger-light: #FEE2E2;
+    --success: #16A34A;
+    --success-light: #DCFCE7;
+    --warning: #D97706;
+    --warning-light: #FEF3C7;
+    --border: #E7E5E4;
+    --border-strong: #D6D3D1;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #1E40AF 100%);
+    color: white;
+    padding: 80px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(147,197,253,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero h1 {
+    font-size: 2.4rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    margin-bottom: 20px;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 32px;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+  .hero-summary {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+  }
+  .hero-summary p {
+    font-size: 16px;
+    line-height: 1.7;
+    font-weight: 400;
+    opacity: 0.92;
+  }
+  .hero-summary .highlight {
+    color: #93C5FD;
+    font-weight: 600;
+  }
+
+  /* Layout */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin: -30px auto 48px;
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    box-shadow: var(--shadow-lg);
+  }
+  .toc h3 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px;
+  }
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .toc-item:hover { background: var(--surface-alt); }
+  .toc-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 56px;
+    scroll-margin-top: 40px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 32px 0 14px;
+    color: var(--text);
+  }
+
+  p { margin-bottom: 14px; color: var(--text-secondary); }
+
+  /* Callout */
+  .callout {
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .callout-danger {
+    background: var(--danger-light);
+    border-left: 4px solid var(--danger);
+    color: #991B1B;
+  }
+  .callout-success {
+    background: var(--success-light);
+    border-left: 4px solid var(--success);
+    color: #166534;
+  }
+  .callout-info {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    color: var(--accent-dark);
+  }
+  .callout-warning {
+    background: var(--warning-light);
+    border-left: 4px solid var(--warning);
+    color: #92400E;
+  }
+  .callout strong { font-weight: 700; }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead { background: var(--surface-alt); }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(0,0,0,0.01); }
+
+  /* Code / Flow */
+  .flow-block {
+    background: #1E293B;
+    color: #E2E8F0;
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin: 16px 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+    white-space: pre;
+    box-shadow: var(--shadow-md);
+  }
+  .flow-block .arrow { color: #60A5FA; }
+  .flow-block .comment { color: #94A3B8; }
+  .flow-block .highlight { color: #FCD34D; }
+  .flow-block .stage { color: #34D399; font-weight: 600; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  @media (max-width: 640px) { .card-grid { grid-template-columns: 1fr; } }
+  .card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .card li {
+    padding: 4px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .card li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+  .card-pro { border-top: 3px solid var(--success); }
+  .card-con { border-top: 3px solid var(--danger); }
+  .card-pro li::before { background: var(--success); }
+  .card-con li::before { background: var(--danger); }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-high { background: var(--danger-light); color: var(--danger); }
+  .badge-mid { background: var(--warning-light); color: var(--warning); }
+  .badge-low { background: var(--success-light); color: var(--success); }
+
+  /* Scenario blocks */
+  .scenario {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 12px 0;
+  }
+  .scenario-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  /* Key Message */
+  .key-messages {
+    background: linear-gradient(135deg, #0F172A, #1E3A5F);
+    color: white;
+    border-radius: var(--radius);
+    padding: 32px;
+    margin: 32px 0;
+  }
+  .key-messages h3 { color: white; margin-top: 0; margin-bottom: 20px; }
+  .key-msg {
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    align-items: flex-start;
+  }
+  .key-msg:last-child { border-bottom: none; }
+  .key-msg-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: #60A5FA;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+  .key-msg p { color: rgba(255,255,255,0.85); margin: 0; }
+  .key-msg strong { color: white; }
+
+  /* List style */
+  .styled-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+  .styled-list li {
+    padding: 6px 0 6px 20px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  .styled-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--text-tertiary);
+  }
+
+  /* Comparison */
+  .vs-table td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+  .cell-no { color: var(--danger); font-weight: 600; }
+  .cell-yes { color: var(--success); font-weight: 600; }
+  .cell-warn { color: var(--warning); font-weight: 600; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 48px 20px 40px; }
+    .hero h1 { font-size: 1.6rem; }
+    .toc { margin: -20px 16px 32px; padding: 20px; }
+    .container { padding: 0 16px; }
+    .section-header h2 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <h1>포토북 구독서비스<br>기술 설계 제안서</h1>
+    <div class="hero-meta">
+      <span>📅 2026-04-15</span>
+      <span>🎯 경영진 / 비개발 이해관계자 포함</span>
+    </div>
+    <div class="hero-summary">
+      <p>"앱을 안 켜도 폰 속 사진이 자동으로 포토북이 된다"는 <span class="highlight">기술적으로 불가능</span>합니다.<br>
+      대신 <strong>"앱을 켜면 순식간에 포토북이 만들어진다"</strong>는 가능하고, 사용자 경험도 더 좋습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc container">
+  <h3>목차</h3>
+  <div class="toc-grid">
+    <a class="toc-item" href="#sec1"><span class="toc-num">1</span> 서비스 개요</a>
+    <a class="toc-item" href="#sec2"><span class="toc-num">2</span> 백그라운드 처리의 기술적 한계</a>
+    <a class="toc-item" href="#sec3"><span class="toc-num">3</span> 제안하는 설계</a>
+    <a class="toc-item" href="#sec4"><span class="toc-num">4</span> 현재 시스템과의 간극</a>
+    <a class="toc-item" href="#sec5"><span class="toc-num">5</span> AI 에이전트 한계</a>
+    <a class="toc-item" href="#sec6"><span class="toc-num">6</span> 분업 분석</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SECTION 1 -->
+  <div class="section" id="sec1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>서비스 개요</h2>
+    </div>
+
+    <p>매월 자동으로 사용자의 사진을 분석하여 포토북을 구성하고, 알림으로 추천하는 구독형 서비스.</p>
+
+    <div class="flow-block"><span class="comment">// 서비스 플로우</span>
+사용자의 한 달 사진
+    <span class="arrow">→</span> AI 클러스터링 <span class="comment">(시간/위치 기반 그룹핑)</span>
+    <span class="arrow">→</span> 이미지 품질 분석 <span class="comment">(얼굴, 구도, 선명도)</span>
+    <span class="arrow">→</span> <span class="highlight">베스트 30장 선택</span>
+    <span class="arrow">→</span> 포토북 레이아웃 자동 구성
+    <span class="arrow">→</span> 미리보기 제공
+    <span class="arrow">→</span> <span class="stage">구매 시에만 원본 업로드</span></div>
+
+    <h3>고정 스펙</h3>
+    <ul class="styled-list">
+      <li>포토북 이미지 수: <strong>30장 고정</strong></li>
+      <li>추천 주기: <strong>월 1회</strong></li>
+      <li>대상: 이번 달 사진 우선, 부족 시 이전 달 포함</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="sec2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>백그라운드 처리의 기술적 한계</h2>
+    </div>
+
+    <h3>2-1. iOS 제약</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>제약</th><th>상세</th><th>영향</th></tr></thead>
+        <tbody>
+          <tr><td><strong>사진 접근 불가</strong></td><td>앱이 실행 중이 아니면 PhotoKit API로 사진첩 접근 불가능</td><td>백그라운드에서 사진 스캔 자체가 불가</td></tr>
+          <tr><td><strong>BGAppRefreshTask</strong></td><td>최대 30초 실행 제한, OS가 실행 시점 결정</td><td>클러스터링+분석+업로드를 30초 안에 끝낼 수 없음</td></tr>
+          <tr><td><strong>BGProcessingTask</strong></td><td>충전 중 + WiFi 조건에서만 실행, 수 분 가능</td><td>실행 조건이 까다로워 월 1회 보장 불가</td></tr>
+          <tr><td><strong>실행 빈도</strong></td><td>iOS ML이 사용자 패턴을 학습하여 실행 시점 결정</td><td>"매월 1일" 같은 예약 불가</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger">
+      <strong>결론: iOS에서 완전 백그라운드 포토북 생성은 불가능</strong>
+    </div>
+
+    <h3>2-2. Android 제약</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>제약</th><th>상세</th><th>영향</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Doze 모드</strong></td><td>화면 꺼진 상태에서 네트워크/CPU 사용 제한</td><td>이미지 업로드·서버 통신 차단됨</td></tr>
+          <tr><td><strong>WorkManager</strong></td><td>최소 반복 주기 15분, OS가 배치로 묶어 실행</td><td>정확한 타이밍 보장 불가</td></tr>
+          <tr><td><strong>배터리 최적화</strong></td><td>제조사별 추가 제한 (삼성 등)</td><td>앱이 강제 종료될 수 있음</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Android는 iOS보다 자유도가 높지만, <strong>원본 이미지 업로드를 백그라운드에서 안정적으로 수행하기는 여전히 어렵습니다.</strong></p>
+
+    <h3>2-3. 원본 이미지 업로드가 핵심 병목인 이유</h3>
+
+    <div class="flow-block"><span class="comment">// 현재 편집기의 업로드 플로우</span>
+사진 1장마다:
+    원본 이미지 <span class="highlight">(3~15MB)</span> + 중크기 이미지 (800px) → 서버 전송
+    서버에서 분석 <span class="comment">(얼굴 감지, 특징 추출, 품질 평가)</span>
+    <span class="arrow">→</span> 파일당 <span class="highlight">2~15초</span> 소요</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>시나리오</th><th>소요 시간</th><th>백그라운드 가능 여부</th></tr></thead>
+        <tbody>
+          <tr><td>30장 업로드 (WiFi)</td><td>1~3분</td><td><span class="cell-no">iOS: 불가 (30초 제한)</span> / <span class="cell-warn">Android: 불안정</span></td></tr>
+          <tr><td>30장 업로드 (LTE)</td><td>3~8분</td><td><span class="cell-no">양쪽 모두 불가</span></td></tr>
+          <tr><td>100장 업로드</td><td>5~25분</td><td><span class="cell-no">양쪽 모두 불가</span></td></tr>
+          <tr><td>발열</td><td>연속 업로드 시 기기 발열 심함</td><td><span class="cell-warn">OS가 앱을 강제 종료할 수 있음</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warning">
+      <strong>핵심:</strong> 원본 이미지를 서버에 올리는 과정이 있는 한, 백그라운드 처리는 시간·안정성 모두에서 실패할 가능성이 높습니다.
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="sec3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>제안하는 설계: 포어그라운드 비동기 처리</h2>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>핵심 아이디어:</strong> 원본 업로드를 없앤다. 썸네일(300×300)만으로 분석·추천을 완료하고, 원본 업로드는 구매 시점으로 미룬다.
+    </div>
+
+    <h3>3-2. 플로우 상세</h3>
+
+    <div class="flow-block"><span class="stage">[1단계]</span> 클러스터링 — 앱 포어그라운드, 백그라운드 스레드
+<span class="comment">• 사진첩 메타데이터 스캔 (날짜, 위치)
+• 이번 달 기간으로 필터링
+• 시간/위치 기반 클러스터링
+• 소요 시간: 1~10초 (1,000~10,000장 기준)</span>
+
+    <span class="arrow">↓</span>
+
+<span class="stage">[2단계]</span> 이미지 분석 — 썸네일 기반, 서버 배치 처리
+<span class="comment">• 클러스터 사진 (예: 300장)을 300x300 썸네일로 리사이즈
+• 썸네일을 이미지분석서버에 배치 전송
+• 10건씩 병렬 배치 → 약 10초 이내
+• 분석 결과: 얼굴 감지, 품질 점수, 특징 벡터</span>
+
+    <span class="arrow">↓</span>
+
+<span class="stage">[3단계]</span> 베스트 30장 선택 — 서버 또는 로컬
+<span class="comment">• 분석 결과 기반으로 다양성·품질·중복 제거 후 30장 선택
+• 소요 시간: 1초 미만</span>
+
+    <span class="arrow">↓</span>
+
+<span class="stage">[4단계]</span> 포토북 레이아웃 추천 — 추천서버
+<span class="comment">• 30장의 분석 정보로 추천서버 요청
+• 포토북 레이아웃 JSON 응답
+• 소요 시간: 1초 이하 (30장 규모)</span>
+
+    <span class="arrow">↓</span>
+
+<span class="stage">[5단계]</span> 미리보기 — 모바일 로컬
+<span class="comment">• 포토북 레이아웃을 모바일에서 렌더링
+• 원본 이미지는 기기에 있으므로 로컬 경로로 참조
+• 서버 업로드 불필요</span>
+
+    <span class="arrow">↓</span>
+
+<span class="stage">[6단계]</span> 구매 — 사용자 결정 시점에만 업로드
+<span class="comment">• 사용자가 "구매하기" 클릭
+• 이 시점에만 30장 원본을 서버에 업로드
+• 구매 의사가 있는 유저만 로딩 경험</span></div>
+
+    <h3>3-3. 시간 비교</h3>
+    <div class="table-wrap">
+      <table class="vs-table">
+        <thead><tr><th>단계</th><th>기존 방식 (원본 업로드 선행)</th><th>제안 방식 (썸네일 분석)</th></tr></thead>
+        <tbody>
+          <tr><td>이미지 업로드</td><td><span class="cell-no">30장 × 2~15초 = 60~450초</span></td><td><span class="cell-yes">300×300 썸네일 × 300장 ≈ 수 초</span></td></tr>
+          <tr><td>이미지 분석</td><td>업로드와 동시 진행</td><td><span class="cell-yes">배치 처리 ~10초</span></td></tr>
+          <tr><td>포토북 추천</td><td>~1초</td><td>~1초</td></tr>
+          <tr><td><strong>총 소요 시간</strong></td><td><span class="cell-no"><strong>1~8분</strong></span></td><td><span class="cell-yes"><strong>15~25초</strong></span></td></tr>
+          <tr><td>원본 업로드</td><td>이미 완료</td><td>구매 시 1~3분 (30장)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>3-5. 알림 전략</h3>
+
+    <div class="card-grid">
+      <div class="scenario">
+        <div class="scenario-label">Scenario A — 앱을 먼저 쓰다가 완성</div>
+        <p style="font-size:14px;">사용자가 앱을 열어 다른 기능 사용 → 뒷단에서 포토북 자동 생성 (15~25초) → 인앱 알림: "이번 달 포토북이 준비됐어요!" → 미리보기 유도</p>
+      </div>
+      <div class="scenario">
+        <div class="scenario-label">Scenario B — 푸시 알림으로 유입</div>
+        <p style="font-size:14px;">서버에서 푸시 발송 → 사용자가 푸시 터치 → 앱 실행 → 서베이/인트로 화면으로 시간 확보 (5~10초) → 뒷단에서 생성 → 미리보기 전환</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="sec4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>현재 시스템과의 간극</h2>
+    </div>
+
+    <h3>4-1. 변경이 필요한 시스템</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>시스템</th><th>현재</th><th>변경 필요</th><th>영향도</th></tr></thead>
+        <tbody>
+          <tr><td><strong>네이티브 앱</strong><br>(iOS/Android)</td><td>사진 선택 → 에디터에 전달</td><td>자동 클러스터링 + 썸네일 생성 + 분석 요청 + 미리보기 렌더링</td><td><span class="badge badge-high">높음</span></td></tr>
+          <tr><td><strong>이미지분석 서버</strong></td><td>원본 기반 1장씩 분석</td><td>썸네일 기반 배치 분석 API 추가</td><td><span class="badge badge-mid">중간</span></td></tr>
+          <tr><td><strong>포토북 추천서버</strong></td><td>업로드된 이미지 기반 추천</td><td>썸네일 분석 결과 기반 추천 (기존과 유사)</td><td><span class="badge badge-low">낮음</span></td></tr>
+          <tr><td><strong>에디터 웹뷰</strong></td><td>전체 편집 플로우 담당</td><td>미리보기 전용 모드 필요 (또는 네이티브에서 렌더링)</td><td><span class="badge badge-mid">중간</span></td></tr>
+          <tr><td><strong>백엔드</strong></td><td>원본 업로드 + 분석 동시 처리</td><td>구매 시점 업로드 API, 프로젝트 사전 생성 API</td><td><span class="badge badge-mid">중간</span></td></tr>
+          <tr><td><strong>프론트 웹뷰</strong></td><td>상품 선택 → 에디터 진입</td><td>구독 포토북 전용 진입점</td><td><span class="badge badge-low">낮음</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>4-2. 현재 편집기 구조의 한계</h3>
+    <div class="flow-block"><span class="comment">// 현재 모바일 포토북 생성 과정</span>
+프론트 웹뷰 <span class="comment">(상품 선택)</span>
+    <span class="arrow">→</span> 에디터 웹뷰 진입 <span class="comment">(직접 URL 접근 불가, 반드시 순서대로)</span>
+    <span class="arrow">→</span> 에디터가 네이티브에 사진 요청 <span class="comment">(openImagePicker)</span>
+    <span class="arrow">→</span> 네이티브가 사진 정보 전달
+    <span class="arrow">→</span> 에디터가 원본을 서버에 업로드 <span class="highlight">(순차, 파일당 2~15초)</span>
+    <span class="arrow">→</span> 업로드 완료 후 추천 요청
+    <span class="arrow">→</span> 포토북 렌더링</div>
+
+    <div class="callout callout-warning">
+      <strong>구조적 문제:</strong> 에디터가 주도권을 가지므로 앱이 사진을 "밀어 넣을" 수 없고, 원본 업로드가 선행 필수이며, 직접 진입이 불가합니다. 따라서 구독서비스를 기존 에디터 플로우에 끼워 넣는 것은 구조적으로 맞지 않으며, <strong>별도의 경량 플로우</strong>가 필요합니다.
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="sec5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>AI 에이전트로 한 번에 진행하기 어려운 이유</h2>
+    </div>
+
+    <h3>5-1. 시스템 복잡도</h3>
+    <p>이 프로젝트는 <strong>최소 4개 시스템을 동시에 수정</strong>해야 합니다. 각 시스템이 서로 다른 언어, 프레임워크, 통신 방식, 배포 방식을 사용합니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>영역</th><th>기술 스택</th></tr></thead>
+        <tbody>
+          <tr><td><strong>언어</strong></td><td>Swift, Kotlin/Java, JavaScript, Python</td></tr>
+          <tr><td><strong>프레임워크</strong></td><td>UIKit/RxSwift, Android Jetpack, React/Redux, Flask/FastAPI</td></tr>
+          <tr><td><strong>통신 방식</strong></td><td>postMessage (웹↔네이티브), REST API (클라이언트↔서버), Redis (서버↔서버)</td></tr>
+          <tr><td><strong>배포 방식</strong></td><td>App Store/Play Store, 웹 배포, AWS Lambda/ECS</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>5-2. AI 에이전트의 한계</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>제약</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td><strong>실기기 테스트 불가</strong></td><td>iOS/Android 코드는 실기기나 시뮬레이터에서만 동작 확인 가능. AI가 빌드·실행·디버깅 사이클을 자체 수행할 수 없음</td></tr>
+          <tr><td><strong>WebView ↔ Native 디버깅</strong></td><td>postMessage 기반 통신은 양쪽을 동시에 실행해야 테스트 가능</td></tr>
+          <tr><td><strong>레거시 코드 이해</strong></td><td>수년간 쌓인 레거시. 코드만으로 파악하기 어려운 암묵적 규칙과 사이드이펙트</td></tr>
+          <tr><td><strong>배포 파이프라인</strong></td><td>App Store 심사, 웹 배포, 서버 배포가 각각 다른 프로세스</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>5-3. 특히 어려운 부분</h3>
+    <div class="card">
+      <ul class="styled-list">
+        <li><strong>네이티브 ↔ 웹뷰 경계:</strong> 프로젝트의 핵심이자 가장 디버깅하기 어려운 지점. 실제로 앱에서 웹뷰가 열리고 메시지가 오가는 것을 확인하려면 반드시 사람이 기기에서 테스트해야 합니다.</li>
+        <li><strong>상태 동기화:</strong> 클러스터링 → 분석 → 추천 → 미리보기 → 구매까지 여러 시스템에 걸쳐 상태가 전달됩니다. 한 곳에서 데이터 형식이 바뀌면 체인 전체가 영향받습니다.</li>
+        <li><strong>점진적 배포 불가:</strong> 최소한의 동작 단위가 크기 때문에 부분 배포가 어렵습니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="sec6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>분업 분석</h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card card-pro">
+        <h4>옵션 A: 1명 (풀스택)</h4>
+        <ul>
+          <li>전체 맥락을 한 사람이 파악 → 일관성 높음</li>
+          <li>소통 비용 0</li>
+          <li>시스템 간 인터페이스 불일치 위험 낮음</li>
+          <li>점진적 개발 가능</li>
+        </ul>
+        <p style="margin-top:12px;font-size:13px;color:var(--text-tertiary);">적합: 프로토타입 단계, 빠른 방향 검증</p>
+      </div>
+      <div class="card card-pro">
+        <h4>옵션 B: 2명 (모바일 + AI)</h4>
+        <ul>
+          <li>병렬 작업 가능 → 전체 기간 단축</li>
+          <li>각자 전문 영역에 집중 가능</li>
+          <li>한 명이 막혀도 다른 쪽 진행 가능</li>
+          <li>AI 분석 개선과 모바일 UI 동시 진행</li>
+        </ul>
+        <p style="margin-top:12px;font-size:13px;color:var(--text-tertiary);">적합: 본개발 단계, 일정 압박 시 (현재 프로젝트에 권장)</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="vs-table">
+        <thead><tr><th>구분</th><th>1명 (풀스택)</th><th>2명 (모바일 + AI)</th></tr></thead>
+        <tbody>
+          <tr><td>소통 비용</td><td><span class="cell-yes">없음</span></td><td><span class="cell-warn">높음 (매일 싱크 필요)</span></td></tr>
+          <tr><td>속도</td><td><span class="cell-warn">느리지만 일관적</span></td><td><span class="cell-yes">빠르지만 통합에 시간 소요</span></td></tr>
+          <tr><td>핵심 리스크</td><td>기간이 2~3배 길어짐</td><td>인터페이스 불일치 시 양쪽 재작업</td></tr>
+          <tr><td>전제 조건</td><td>—</td><td><strong>API 스펙을 개발 전에 확정해야 함</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>권장:</strong> 2명 분업을 권장하되, 시작 전에 반드시 <strong>API 인터페이스 문서를 먼저 확정</strong>하고, <strong>주 2회 이상 통합 테스트</strong>를 진행해야 합니다. 1명이 할 수 없는 규모는 아니지만, 기간이 2~3배 길어질 수 있습니다.
+    </div>
+  </div>
+
+  <!-- KEY MESSAGES -->
+  <div class="key-messages">
+    <h3>핵심 메시지</h3>
+    <div class="key-msg">
+      <span class="key-msg-num">01</span>
+      <p><strong>"앱이 꺼져 있어도 자동으로 다 된다"는 기술적으로 불가능합니다</strong> — iOS 사진 접근 정책과 백그라운드 시간 제한 때문</p>
+    </div>
+    <div class="key-msg">
+      <span class="key-msg-num">02</span>
+      <p><strong>"앱을 켜면 순식간에 완성된다"는 가능합니다</strong> — 원본 업로드를 제거하고 썸네일 분석으로 전환하면 15~25초에 완료</p>
+    </div>
+    <div class="key-msg">
+      <span class="key-msg-num">03</span>
+      <p><strong>4개 이상의 시스템을 동시에 수정해야 합니다</strong> — AI 에이전트만으로는 실기기 테스트가 불가능하여 한계가 있음</p>
+    </div>
+    <div class="key-msg">
+      <span class="key-msg-num">04</span>
+      <p><strong>2명 분업이 현실적이나, API 인터페이스 사전 확정과 주기적 통합 테스트가 전제 조건입니다</strong></p>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  포토북 구독서비스 기술 설계 제안서 · 2026-04-15
+</div>
+
+</body>
+</html>
