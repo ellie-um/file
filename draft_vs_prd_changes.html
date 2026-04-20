@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스냅스 구독 서비스 — 드래프트 vs PRD 변경사항</title>
+<style>
+  :root {
+    --bg: #f5f4f2;
+    --card: #ffffff;
+    --accent: #ff5c35;
+    --text: #1a1a1a;
+    --sub: #666;
+    --border: #e5e5e5;
+    --green: #27ae60;
+    --green-bg: #eafaf1;
+    --red: #e74c3c;
+    --red-bg: #fef5f5;
+    --blue: #2980b9;
+    --blue-bg: #e8f4fd;
+    --amber: #d68910;
+    --amber-bg: #fffbf0;
+    --purple: #8e44ad;
+    --purple-bg: #f3f0ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  .top-bar { background: var(--accent); color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .top-bar .badge { background: rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+  .top-bar .title { font-size: 15px; font-weight: 700; }
+
+  .container { max-width: 920px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .doc-header { background: var(--card); border-radius: 12px; padding: 28px; margin-bottom: 24px; border-left: 4px solid var(--accent); }
+  .doc-header h1 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .doc-header .desc { font-size: 13px; color: var(--sub); line-height: 1.5; }
+  .doc-header .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+  .doc-header .meta span { font-size: 11px; color: var(--sub); background: var(--bg); padding: 4px 10px; border-radius: 20px; }
+
+  .summary-banner { background: linear-gradient(135deg, #fff5f3, #fff); border: 1px solid #ffd0c5; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .summary-banner h2 { font-size: 15px; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
+  .stat-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; flex: 1; min-width: 120px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+  .section { background: var(--card); border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .section-title .icon { font-size: 16px; }
+
+  .change-card { border-radius: 10px; margin-bottom: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .change-header { padding: 12px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .change-header:hover { opacity: 0.9; }
+  .change-num { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+  .change-header .title { font-size: 13px; font-weight: 700; flex: 1; }
+  .change-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
+
+  .change-body { padding: 0 16px 16px; }
+  .diff-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  @media(max-width:600px) { .diff-row, .stat-row { grid-template-columns: 1fr !important; flex-direction: column; } }
+  .diff-before { background: var(--red-bg); border: 1px solid #f5c6c6; border-radius: 8px; padding: 12px; }
+  .diff-after { background: var(--green-bg); border: 1px solid #b7e4c7; border-radius: 8px; padding: 12px; }
+  .diff-label { font-size: 10px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+  .diff-before .diff-label { color: var(--red); }
+  .diff-after .diff-label { color: var(--green); }
+  .diff-content { font-size: 12px; color: var(--text); line-height: 1.6; }
+  .diff-content strong { font-weight: 700; }
+  .diff-note { font-size: 11px; color: var(--sub); margin-top: 8px; padding: 8px 12px; background: var(--amber-bg); border-radius: 6px; border-left: 3px solid var(--amber); }
+
+  /* Category colors */
+  .cat-price { background: var(--blue-bg); border-color: #a8d4f0; }
+  .cat-price .change-num { background: var(--blue); }
+  .cat-price .title { color: var(--blue); }
+
+  .cat-confirm { background: var(--green-bg); border-color: #b7e4c7; }
+  .cat-confirm .change-num { background: var(--green); }
+  .cat-confirm .title { color: var(--green); }
+
+  .cat-structure { background: var(--purple-bg); border-color: #d0cbff; }
+  .cat-structure .change-num { background: var(--purple); }
+  .cat-structure .title { color: var(--purple); }
+
+  .cat-new { background: #fff5f3; border-color: #ffd0c5; }
+  .cat-new .change-num { background: var(--accent); }
+  .cat-new .title { color: var(--accent); }
+
+  .cat-scope { background: var(--amber-bg); border-color: #fdeeba; }
+  .cat-scope .change-num { background: var(--amber); }
+  .cat-scope .title { color: var(--amber); }
+
+  .badge-confirmed { background: var(--green-bg); color: var(--green); }
+  .badge-changed { background: var(--blue-bg); color: var(--blue); }
+  .badge-new { background: #f3f0ff; color: var(--purple); }
+  .badge-removed { background: var(--red-bg); color: var(--red); }
+
+  .ref-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .ref-link { font-size: 11px; padding: 6px 12px; border-radius: 6px; background: var(--bg); border: 1px solid var(--border); color: var(--sub); text-decoration: none; }
+  .ref-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  .toc { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .toc-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .toc-list { display: flex; flex-direction: column; gap: 6px; }
+  .toc-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sub); }
+  .toc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .pending-list { display: flex; flex-direction: column; gap: 6px; }
+  .pending-item { font-size: 12px; color: var(--sub); padding: 8px 12px; background: var(--bg); border-radius: 6px; border-left: 3px solid var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="badge">CHANGELOG</span>
+    <span class="title">드래프트 → PRD 변경사항 정리</span>
+  </div>
+  <span style="font-size:12px;opacity:0.8;">2026.04.20 · 개발 공유용</span>
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <h1>스냅스 포토북 구독 서비스 — 드래프트 vs PRD 변경사항</h1>
+    <div class="desc">드래프트(v0.1) 대비 PRD 및 프로토타입에서 확정·변경·추가된 사항을 정리한 문서입니다.<br>개발팀 공유 시 변경된 정책과 스펙을 빠르게 파악할 수 있도록 구성했습니다.</div>
+    <div class="meta">
+      <span>드래프트: 2026.03.31</span>
+      <span>PRD 작성: 2026.04 ~</span>
+      <span>대상: 개발·디자인·QA</span>
+    </div>
+    <div class="ref-links">
+      <a class="ref-link" href="https://ellie-um.github.io/file/snaps_subscription_draft.html" target="_blank">드래프트 원본</a>
+      <a class="ref-link" href="https://ellie-um.github.io/file/snaps_subscription_detail.html" target="_blank">설계 상세 원본</a>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-banner">
+    <h2>변경 요약</h2>
+    <div class="stat-row">
+      <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">정책 확정 (미정→확정)</div></div>
+      <div class="stat-item"><div class="stat-num">5</div><div class="stat-label">스펙 변경</div></div>
+      <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">구조 변경</div></div>
+      <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">신규 추가</div></div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">목차</div>
+    <div class="toc-list">
+      <div class="toc-item"><div class="toc-dot" style="background:var(--blue);"></div><span style="font-weight:600;color:var(--text);">A. 요금제·가격 확정</span> — 가격 변경, 무료체험 정책, 결제 수단</div>
+      <div class="toc-item"><div class="toc-dot" style="background:var(--green);"></div><span style="font-weight:600;color:var(--text);">B. 미정 → 확정 정책</span> — 사진 수, 업로드 방식, 수정 가능 여부, 정렬, 알림 채널, 수신자 가입</div>
+      <div class="toc-item"><div class="toc-dot" style="background:var(--purple);"></div><span style="font-weight:600;color:var(--text);">C. 구조·플로우 변경</span> — 탭 구조, Phase 구조, 프리뷰 화면</div>
+      <div class="toc-item"><div class="toc-dot" style="background:var(--accent);"></div><span style="font-weight:600;color:var(--text);">D. 신규 추가 항목</span> — 진입 경로 B, 사진 처리 파이프라인</div>
+      <div class="toc-item"><div class="toc-dot" style="background:var(--amber);"></div><span style="font-weight:600;color:var(--text);">E. 여전히 미정 (Pending)</span> — 논의 필요 항목</div>
+    </div>
+  </div>
+
+  <!-- ═══ A. 요금제·가격 확정 ═══ -->
+  <div class="section">
+    <div class="section-title"><span class="icon">💰</span> A. 요금제·가격 확정</div>
+
+    <!-- A-1 -->
+    <div class="change-card">
+      <div class="change-header cat-price">
+        <div class="change-num">1</div>
+        <span class="title">디지털 요금제 가격 변경</span>
+        <span class="change-badge badge-changed">변경</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">디지털: <strong>월 2,900원</strong></div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content">디지털: <strong>월 1,900원</strong></div></div>
+        </div>
+        <div class="diff-note">1,000원 인하. 진입 장벽을 낮추고 무료체험 → 유료 전환율 최적화 목적.</div>
+      </div>
+    </div>
+
+    <!-- A-2 -->
+    <div class="change-card">
+      <div class="change-header cat-price">
+        <div class="change-num">2</div>
+        <span class="title">무료 체험 정책 확정</span>
+        <span class="change-badge badge-confirmed">확정</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">무료 체험: <strong>"조건 미정, 협의 필요"</strong><br>디지털 요금제만 "첫 달 무료" 표기</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content">디지털 요금제 <strong>3개월 무료 체험</strong> (런칭 시)<br>라이트·시즌은 즉시 결제</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- A-3 -->
+    <div class="change-card">
+      <div class="change-header cat-price">
+        <div class="change-num">3</div>
+        <span class="title">결제 수단 확정</span>
+        <span class="change-badge badge-confirmed">확정</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">"정기결제 수단 · <strong>스냅스 PG 연동</strong>"<br>구체적 수단 미정</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content">Primary: <strong>네이버페이</strong> 정기결제<br>Secondary: <strong>신용/체크카드</strong></div></div>
+        </div>
+        <div class="diff-note">프로토타입에서 네이버페이가 기본 선택 상태로 구현됨. 카카오페이 등 간편결제는 V1 스코프 외.</div>
+      </div>
+    </div>
+
+    <!-- A-4 -->
+    <div class="change-card">
+      <div class="change-header cat-price">
+        <div class="change-num">4</div>
+        <span class="title">요금제 변경 정책 확정</span>
+        <span class="change-badge badge-changed">변경</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트 (설계 상세)</div><div class="diff-content">업그레이드: <strong>즉시 적용, 차액 일할 계산</strong><br>다운그레이드: 다음 결제일부터 적용</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content">업/다운그레이드 모두 <strong>다음 결제일부터 적용</strong><br>결제 주기당 1회 변경 가능</div></div>
+        </div>
+        <div class="diff-note">일할 계산 로직 제거 → 구현 복잡도 대폭 감소. BE 결제 로직 단순화.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ B. 미정→확정 정책 ═══ -->
+  <div class="section">
+    <div class="section-title"><span class="icon">✅</span> B. 미정 → 확정된 정책</div>
+
+    <!-- B-1 -->
+    <div class="change-card">
+      <div class="change-header cat-confirm">
+        <div class="change-num">5</div>
+        <span class="title">포토북 사진 수 · 레이아웃 확정</span>
+        <span class="change-badge badge-confirmed">확정</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">"<strong>요금제별 사진 수 기준</strong>"<br>구체적 수량 미정</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content"><strong>30장 고정</strong>, 1페이지 1사진 고정 레이아웃<br>콜라주 레이아웃은 추후 확장</div></div>
+        </div>
+        <div class="diff-note">요금제와 무관하게 사진 30장 통일. 모든 요금제 동일 품질의 디지털 포토북.</div>
+      </div>
+    </div>
+
+    <!-- B-2 -->
+    <div class="change-card">
+      <div class="change-header cat-confirm">
+        <div class="change-num">6</div>
+        <span class="title">사진 업로드 방식 확정 (V1/V2 분리)</span>
+        <span class="change-badge badge-new">신규 확정</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">업로드 방식 <strong>미언급</strong><br>"사진 접근 권한 동의" 정도만 기술</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content"><strong>V1: Foreground-only 업로드</strong> (iOS·Android 공통)<br>V2: Background upload (iOS 26.1 안정화 후)<br>Android V2: WorkManager 기반 배치 업로드</div></div>
+        </div>
+        <div class="diff-note">PHBackgroundResourceUploadExtension이 아직 검증 안 된 상태이므로 V1은 foreground 통일. 경쟁사(Chatbooks, Klikkie 등)도 foreground 모델 사용 중. 프로토타입에 iOS/Android 분기 셀렉터 구현됨.</div>
+      </div>
+    </div>
+
+    <!-- B-3 -->
+    <div class="change-card">
+      <div class="change-header cat-confirm">
+        <div class="change-num">7</div>
+        <span class="title">사용자 수정 가능 여부: 수정 불가 → 에디터 제공</span>
+        <span class="change-badge badge-changed">변경</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">"자동 생성된 포토북 확인 후 발행 — <strong>사진 교체/수정 불가</strong>"<br>"수정 허용 범위 협의 필요" TBD 상태</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content"><strong>에디터 제공</strong>하여 사용자가 수정 가능<br>프리뷰 화면에서 편집 버튼으로 에디터 진입</div></div>
+        </div>
+        <div class="diff-note">자동 생성 후 사용자가 사진 교체/순서 변경 등 편집할 수 있는 에디터를 제공하는 것으로 확정. 프로토타입의 미리보기 화면에 "미리보기 / 편집 / 발행" 3버튼 구조로 반영됨.</div>
+      </div>
+    </div>
+
+    <!-- B-4 -->
+    <div class="change-card">
+      <div class="change-header cat-confirm">
+        <div class="change-num">8</div>
+        <span class="title">페이지 정렬 방식 확정</span>
+        <span class="change-badge badge-confirmed">확정</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">페이지 정렬 방식 <strong>미정</strong></div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content"><strong>시간순(Chronological)</strong> 정렬 확정</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B-5 -->
+    <div class="change-card">
+      <div class="change-header cat-confirm">
+        <div class="change-num">9</div>
+        <span class="title">주 알림 채널 확정</span>
+        <span class="change-badge badge-confirmed">확정</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">"카카오 알림톡 우선, <strong>문자 fallback</strong>"</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content">Primary: <strong>카카오</strong> (알림톡)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B-6 -->
+    <div class="change-card">
+      <div class="change-header cat-confirm">
+        <div class="change-num">10</div>
+        <span class="title">수신자 가입 방식 확정</span>
+        <span class="change-badge badge-confirmed">확정</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">"수신자 실물 주문 시 <strong>계정 가입 여부 협의 필요</strong>"</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content"><strong>간편 가입</strong> (카카오 or 네이버)<br>수신자가 디지털 포토북 열람 후 실물 주문 시 간편 가입 진행</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B-7 -->
+    <div class="change-card">
+      <div class="change-header cat-confirm">
+        <div class="change-num">11</div>
+        <span class="title">요금제 명칭 변경</span>
+        <span class="change-badge badge-changed">변경</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">요금제명: "디지털 Basic / 실물 포함 Standard / 실물 프리미엄"<br>→ 3~4 티어, 명칭 미확정</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content"><strong>디지털 / 라이트(추천) / 시즌</strong> 3티어 확정<br>라이트: 5,900원 · 시즌: 3,900원 (가격 유지)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ C. 구조·플로우 변경 ═══ -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🔄</span> C. 구조·플로우 변경</div>
+
+    <!-- C-1 -->
+    <div class="change-card">
+      <div class="change-header cat-structure">
+        <div class="change-num">12</div>
+        <span class="title">구독 관리 탭 구조 변경 (5영역 → 4탭)</span>
+        <span class="change-badge badge-changed">변경</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트 (설계 상세)</div><div class="diff-content">5개 영역:<br><strong>구독홈 / 포토북라이브러리 / 구독관리 / 내역 / 설정</strong></div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD (PRD-5)</div><div class="diff-content">4탭 바텀 네비게이션:<br><strong>홈 / 라이브러리 / 구독관리 / 스냅스</strong><br>내역·설정은 구독관리 하위로 통합<br>5카테고리, 14개 저니로 구조화</div></div>
+        </div>
+        <div class="diff-note">"내역"과 "설정"이 독립 탭에서 구독관리 내부 서브메뉴로 이동. 스냅스(기존 앱) 탭 추가로 기존 서비스와의 연결 유지.</div>
+      </div>
+    </div>
+
+    <!-- C-2 -->
+    <div class="change-card">
+      <div class="change-header cat-structure">
+        <div class="change-num">13</div>
+        <span class="title">서비스 단계(Phase) 구조 변경</span>
+        <span class="change-badge badge-changed">변경</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">Phase 1~4 순차 진행 (+Phase 5 선택)<br>1. 구독 가입 → 2. 포토북 생성 → 3. 실물 배송 → 4. 공유&수신자</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content">3단계 핵심 구조로 정리:<br><strong>가입 → 생성 → 배송</strong> + 공유/수신자 주문<br>PRD를 단계별 분리 문서로 작성 (PRD-0~5)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C-3 -->
+    <div class="change-card">
+      <div class="change-header cat-structure">
+        <div class="change-num">14</div>
+        <span class="title">포토북 미리보기 화면 변경</span>
+        <span class="change-badge badge-changed">변경</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">커버 커스텀 화면에서 <strong>타이틀 입력 포함</strong><br>"사용자 확인 후 발행" 단일 액션</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD 프로토타입</div><div class="diff-content">커버 타이틀 입력 제거 → <strong>전체 페이지 프리뷰</strong> 중심으로 변경<br>3버튼 구조: <strong>미리보기(outline) / 편집(outline) / 발행(accent CTA)</strong></div></div>
+        </div>
+        <div class="diff-note">발행 전 사용자가 전체 포토북을 넘겨보며 확인하고, 수정이 필요하면 편집 화면으로 이동하는 구조.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ D. 신규 추가 항목 ═══ -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🆕</span> D. 신규 추가 항목</div>
+
+    <!-- D-1 -->
+    <div class="change-card">
+      <div class="change-header cat-new">
+        <div class="change-num">15</div>
+        <span class="title">2가지 진입 경로 (Path A / Path B) 추가</span>
+        <span class="change-badge badge-new">신규</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">단일 경로: 구독 가입 → 포토북 생성<br>(드래프트에 "처음 경험: Phase 2 → Phase 1" 언급은 있으나 별도 플로우 없음)</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content"><strong>Path A</strong>: 표준 구독 가입 플로우 (가입 → 생성)<br><strong>Path B</strong>: 마케팅 진입 — 포토북 생성을 먼저 경험 후 발행 시 결제 트리거<br>프로토타입에 두 경로 모두 셀렉터로 구현됨</div></div>
+        </div>
+        <div class="diff-note">Path B는 "먼저 경험하고 결제" 모델. CVR 최적화를 위한 마케팅 캠페인 활용 목적.</div>
+      </div>
+    </div>
+
+    <!-- D-2 -->
+    <div class="change-card">
+      <div class="change-header cat-new">
+        <div class="change-num">16</div>
+        <span class="title">사진 처리 파이프라인 구체화</span>
+        <span class="change-badge badge-new">신규</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">"내부 AI 사진 분석"<br>"중복/불량 제거 · 얼굴/장소/이벤트 감지"<br>구체적 파이프라인 미정</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD</div><div class="diff-content">2단계 파이프라인 확정:<br><strong>1) On-device photo clustering</strong> (디바이스 내 사전 그룹핑)<br><strong>2) Server-side AI curation</strong> (서버 큐레이션으로 30장 선정)<br>Chatbooks 모델 참조</div></div>
+        </div>
+        <div class="diff-note">디바이스에서 사전 클러스터링 후 서버로 전송하여 네트워크 비용 절감. 추가 레퍼런스: Chatbooks, Klikkie, Mootsh.</div>
+      </div>
+    </div>
+
+    <!-- D-3 -->
+    <div class="change-card">
+      <div class="change-header cat-new">
+        <div class="change-num">17</div>
+        <span class="title">프로토타입 OS 분기 (iOS/Android)</span>
+        <span class="change-badge badge-new">신규</span>
+      </div>
+      <div class="change-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">❌ 드래프트</div><div class="diff-content">OS별 분기 <strong>미고려</strong><br>iOS/Android 동일 플로우로 기술</div></div>
+          <div class="diff-after"><div class="diff-label">✅ PRD 프로토타입</div><div class="diff-content">5가지 플로우로 분기:<br>1) 최초가입자 × iOS<br>2) 최초가입자 × Android<br>3) 정기사용자 × iOS<br>4) 정기사용자 × Android 즉시실행(foreground)<br>5) 정기사용자 × Android 배치(background, V2)</div></div>
+        </div>
+        <div class="diff-note">사진 업로드 방식이 OS별로 다르므로 프로토타입 단계에서 분기 확인 가능하도록 셀렉터 구현.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ E. 여전히 미정 (Pending) ═══ -->
+  <div class="section">
+    <div class="section-title"><span class="icon">⏳</span> E. 여전히 미정 — 논의 필요 항목</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:14px;">드래프트에서 TBD였고, PRD 작업 과정에서도 아직 최종 확정되지 않은 항목들입니다.</div>
+    <div class="pending-list">
+      <div class="pending-item"><strong>미사용 월 처리 정책</strong> — 사진이 없는 달의 구독료·포토북 생성 처리 방안</div>
+      <div class="pending-item"><strong>해지 후 디지털 포토북 접근</strong> — 해지 후 기존 포토북 열람 기간 (프로토타입에는 "6개월" 표기, 최종 미확정)</div>
+      <div class="pending-item"><strong>포토북 프로젝트 삭제 정책</strong> — 사용자가 포토북을 삭제할 수 있는지 여부</div>
+      <div class="pending-item"><strong>시즌 요금제 실물 생산 대상 월</strong> — 분기 중 어느 달 포토북을 실물로 제작할지</div>
+      <div class="pending-item"><strong>커버 대표 사진 선정 기준</strong> — AI가 자동 선정 vs 사용자 선택</div>
+      <div class="pending-item"><strong>선물하기 기능 범위</strong> — V1 스코프 제외 유지 여부</div>
+      <div class="pending-item"><strong>포토북 생성 트리거</strong> — 월 1회 고정일 자동 vs 사진 누적 기반</div>
+      <div class="pending-item"><strong>실물 배송 방식</strong> — 자동 발주 vs 고객 최종 확인 후 발주</div>
+      <div class="pending-item"><strong>제품 사양</strong> — 사이즈, 페이지 수, 커버 재질, 책등 포함 여부</div>
+      <div class="pending-item"><strong>해지 리텐션 오퍼 정책</strong> — 할인율, 무료 연장 기간 등 구체 내용</div>
+    </div>
+  </div>
+
+  <!-- 개발 체크포인트 -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🔧</span> 개발 확인 필요 사항</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:14px;">PRD 작업 중 도출된 기술 확인 포인트입니다.</div>
+    <div class="pending-list">
+      <div class="pending-item" style="border-left-color:var(--blue);"><strong>한 달치 썸네일 전체 업로드 후 큐레이션 시작 여부</strong> — 전체 업로드 완료 후 30장 선정 시작하는지, 점진적 처리 가능한지</div>
+      <div class="pending-item" style="border-left-color:var(--blue);"><strong>프리뷰 렌더링과 전체 업로드 병렬 처리 여부</strong> — 프리뷰를 먼저 보여주고 원본 업로드를 백그라운드로 진행할 수 있는지</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
