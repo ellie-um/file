@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스냅스 AI Studio — 포토북 챗 프로토타입</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { width: 100%; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // ── Lucide Icon Components ──
+    
+const Send = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+  </svg>
+);
+
+const Sparkles = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M12 3l-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>
+  </svg>
+);
+
+const Check = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const Upload = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+);
+
+const Plus = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const Minus = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const Calendar = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+const Truck = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+  </svg>
+);
+
+const Heart = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>
+);
+
+const RotateCcw = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+  </svg>
+);
+
+const Edit3 = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+  </svg>
+);
+
+const ChevronLeft = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+);
+
+const ChevronRight = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
+
+const Image = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+  </svg>
+);
+
+const BookOpen = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  </svg>
+);
+
+const Camera = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+  </svg>
+);
+
+const Clock = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+const Package = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+  </svg>
+);
+
+    // ── Main Component ──
+    function SnapsPhotoBookChat() {
+  const [messages, setMessages] = useState([]);
+  const [step, setStep] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    setTimeout(() => addBotMessage({ type: 'text', content: '안녕하세요 수진님 🌸' }), 400);
+    setTimeout(() => addBotMessage({ type: 'text', content: '오늘은 어떤 추억을 담아볼까요?' }), 1200);
+    setTimeout(() => addBotMessage({
+      type: 'chips',
+      chips: ['📚 포토북', '🖼 사진인화', '📅 달력', '🎁 선물용'],
+      action: 'product'
+    }), 1800);
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const addBotMessage = (msg) => {
+    setMessages(prev => [...prev, { ...msg, sender: 'bot', id: Date.now() + Math.random() }]);
+  };
+
+  const addUserMessage = (content) => {
+    setMessages(prev => [...prev, { type: 'text', content, sender: 'user', id: Date.now() + Math.random() }]);
+  };
+
+  const showTyping = (delay = 800) => {
+    return new Promise(resolve => {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        resolve();
+      }, delay);
+    });
+  };
+
+  const handleProductChoice = async (product) => {
+    addUserMessage(product);
+    setStep(1);
+    await showTyping(900);
+    addBotMessage({ type: 'text', content: '포토북을 만들어볼까요. 어떤 추억을 담고 싶으세요?' });
+    await new Promise(r => setTimeout(r, 400));
+    addBotMessage({
+      type: 'free-input',
+      placeholder: '예) 아이 돌까지 1년치 사진으로 부모님 드릴 포토북',
+      suggestions: [
+        '🍼 아이 돌까지 1년 성장기',
+        '✈️ 작년 여행 추억',
+        '💍 결혼 1주년 앨범',
+        '🐶 우리 강아지 1년'
+      ],
+      action: 'intent'
+    });
+  };
+
+  const handleIntent = async (intent) => {
+    addUserMessage(intent);
+    setStep(2);
+    await showTyping(1100);
+    addBotMessage({ type: 'text', content: '아이의 1년이 담긴 소중한 시간이네요 ☺️ 사진을 어떻게 가져올까요?' });
+    await new Promise(r => setTimeout(r, 400));
+    addBotMessage({
+      type: 'source-cards',
+      action: 'source'
+    });
+  };
+
+  const handleSource = async (source) => {
+    addUserMessage(source);
+    setStep(3);
+    await showTyping(1000);
+    addBotMessage({ type: 'photo-uploaded', count: 847 });
+    await new Promise(r => setTimeout(r, 700));
+    addBotMessage({ type: 'text', content: '847장 잘 받았어요. 분위기를 골라주세요. 이 톤으로 포토북을 만들어드릴게요.' });
+    await new Promise(r => setTimeout(r, 500));
+    addBotMessage({
+      type: 'mood-grid',
+      action: 'mood'
+    });
+  };
+
+  const handleMood = async (mood) => {
+    addUserMessage(`${mood} 톤으로 만들어줘`);
+    setStep(4);
+    await showTyping(1200);
+    addBotMessage({ type: 'generating' });
+    await new Promise(r => setTimeout(r, 2400));
+    addBotMessage({ type: 'text', content: '🎉 100p 포토북이 완성됐어요! 시간순으로 정렬했고, 월별로 챕터를 나눴어요. 캡션도 제안드렸어요.' });
+    await new Promise(r => setTimeout(r, 600));
+    addBotMessage({ type: 'photobook-preview', mood });
+  };
+
+  const handlePreviewAction = async (action) => {
+    if (action === 'modify') {
+      addUserMessage('마지막 페이지에 \'엄마 아빠가 사랑해\' 추가해줘');
+      await showTyping(1100);
+      addBotMessage({ type: 'text', content: '마지막 페이지에 메시지를 추가했어요 💌' });
+      await new Promise(r => setTimeout(r, 600));
+      addBotMessage({ type: 'photobook-preview', modified: true });
+    } else if (action === 'order') {
+      addUserMessage('주문할게요');
+      setStep(5);
+      await showTyping(1000);
+      addBotMessage({ type: 'text', content: '부모님 두 분 드릴 거니까 같은 책 2권으로 준비할게요. 패브릭 커버가 잘 어울릴 것 같아요 🤍' });
+      await new Promise(r => setTimeout(r, 500));
+      addBotMessage({ type: 'options' });
+    } else if (action === 'edit') {
+      addUserMessage('직접 편집할게요');
+      await showTyping(600);
+      addBotMessage({ type: 'editor-bridge' });
+    }
+  };
+
+  const handleOrder = async () => {
+    addUserMessage('이대로 주문할게요');
+    setStep(6);
+    await showTyping(900);
+    addBotMessage({ type: 'order-complete' });
+  };
+
+  return (
+    <div className="snp-root">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Pretendard:wght@300;400;500;600;700&display=swap');
+
+        .snp-root {
+          --snp-bg: #FAF6F1;
+          --snp-bg-warm: #F5EFE6;
+          --snp-fg: #2C2520;
+          --snp-fg-soft: #5C544D;
+          --snp-muted: #9A9088;
+          --snp-line: #E8DFD3;
+          --snp-card: #FFFCF8;
+          --snp-accent: #C4756B;
+          --snp-accent-soft: #F3E5DF;
+          --snp-gold: #B8956A;
+          --snp-user-bg: #2C2520;
+
+          font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          background: var(--snp-bg);
+          color: var(--snp-fg);
+          min-height: 100vh;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          letter-spacing: -0.01em;
+          -webkit-font-smoothing: antialiased;
+        }
+
+        .snp-header {
+          background: var(--snp-card);
+          border-bottom: 1px solid var(--snp-line);
+          padding: 16px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+        .snp-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .snp-brand-mark {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--snp-accent);
+          font-style: italic;
+          letter-spacing: -0.02em;
+        }
+        .snp-brand-mark::after {
+          content: '';
+          display: inline-block;
+          width: 6px; height: 6px;
+          background: var(--snp-gold);
+          border-radius: 50%;
+          margin-left: 4px;
+          vertical-align: super;
+        }
+        .snp-brand-text {
+          font-size: 13px;
+          color: var(--snp-fg-soft);
+          font-weight: 500;
+        }
+        .snp-step {
+          font-size: 11px;
+          color: var(--snp-muted);
+          letter-spacing: 0.05em;
+          font-style: italic;
+          font-family: 'Cormorant Garamond', serif;
+        }
+
+        .snp-chat {
+          flex: 1;
+          overflow-y: auto;
+          padding: 24px 20px 100px;
+          max-width: 720px;
+          width: 100%;
+          margin: 0 auto;
+        }
+
+        @media (max-width: 600px) {
+          .snp-chat { padding: 16px 14px 100px; }
+        }
+
+        .snp-msg {
+          margin-bottom: 16px;
+          animation: snp-in 0.5s ease-out both;
+          max-width: 88%;
+        }
+        @keyframes snp-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .snp-msg.user { margin-left: auto; }
+
+        .snp-bubble {
+          padding: 14px 18px;
+          font-size: 15px;
+          line-height: 1.6;
+          border-radius: 18px;
+        }
+        .snp-msg.bot .snp-bubble {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-top-left-radius: 4px;
+        }
+        .snp-msg.user .snp-bubble {
+          background: var(--snp-user-bg);
+          color: var(--snp-card);
+          border-top-right-radius: 4px;
+        }
+
+        .snp-typing {
+          display: inline-flex;
+          gap: 5px;
+          padding: 16px 20px;
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 18px;
+          border-top-left-radius: 4px;
+        }
+        .snp-typing span {
+          width: 7px; height: 7px;
+          background: var(--snp-accent);
+          border-radius: 50%;
+          animation: snp-bounce 1.4s infinite ease-in-out;
+          opacity: 0.6;
+        }
+        .snp-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .snp-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes snp-bounce {
+          0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+          40% { transform: scale(1); opacity: 1; }
+        }
+
+        .snp-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 4px;
+        }
+        .snp-chip {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          padding: 10px 16px;
+          font-size: 14px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.2s;
+          border-radius: 20px;
+          color: var(--snp-fg);
+          font-weight: 500;
+        }
+        .snp-chip:hover {
+          border-color: var(--snp-accent);
+          background: var(--snp-accent-soft);
+          transform: translateY(-1px);
+        }
+
+        /* 자유 입력 + 추천 */
+        .snp-free {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 18px;
+          border-top-left-radius: 4px;
+          padding: 14px;
+        }
+        .snp-free-hint {
+          font-size: 12px;
+          color: var(--snp-muted);
+          font-style: italic;
+          font-family: 'Cormorant Garamond', serif;
+          margin-bottom: 10px;
+          padding-left: 4px;
+        }
+
+        /* 사진 소스 카드 */
+        .snp-sources {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .snp-source {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          padding: 14px 16px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.2s;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-align: left;
+        }
+        .snp-source:hover {
+          border-color: var(--snp-accent);
+          background: var(--snp-card);
+        }
+        .snp-source-icon {
+          width: 36px; height: 36px;
+          background: var(--snp-bg-warm);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--snp-accent);
+          flex-shrink: 0;
+        }
+        .snp-source-text {
+          flex: 1;
+        }
+        .snp-source-text .name {
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 2px;
+        }
+        .snp-source-text .desc {
+          font-size: 12px;
+          color: var(--snp-muted);
+        }
+
+        /* 사진 업로드 완료 */
+        .snp-uploaded {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 12px;
+          padding: 0;
+          overflow: hidden;
+        }
+        .snp-uploaded-grid {
+          display: grid;
+          grid-template-columns: repeat(8, 1fr);
+          gap: 1px;
+          padding: 1px;
+          background: var(--snp-line);
+        }
+        .snp-uploaded-thumb {
+          aspect-ratio: 1;
+          background: linear-gradient(135deg, #f3e5df, #e8d5cb);
+          position: relative;
+          overflow: hidden;
+        }
+        .snp-uploaded-thumb::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, transparent 30%, rgba(196, 117, 107, 0.08));
+        }
+        .snp-uploaded-thumb:nth-child(2n) { background: linear-gradient(135deg, #f5efe6, #e8dfd3); }
+        .snp-uploaded-thumb:nth-child(3n) { background: linear-gradient(135deg, #faf6f1, #f0e6d8); }
+        .snp-uploaded-thumb:nth-child(5n) { background: linear-gradient(135deg, #e8d5cb, #d4bfb3); }
+        .snp-uploaded-info {
+          padding: 12px 16px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .snp-uploaded-info .ct {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 22px;
+          font-weight: 600;
+          color: var(--snp-fg);
+          font-style: italic;
+        }
+        .snp-uploaded-info .lbl {
+          font-size: 12px;
+          color: var(--snp-muted);
+        }
+        .snp-ai-process {
+          padding: 10px 16px;
+          background: var(--snp-bg-warm);
+          font-size: 12px;
+          color: var(--snp-fg-soft);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          border-top: 1px solid var(--snp-line);
+        }
+
+        /* 분위기 그리드 */
+        .snp-moods {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+          margin-top: 4px;
+        }
+        @media (max-width: 480px) {
+          .snp-moods { grid-template-columns: 1fr 1fr; }
+        }
+        .snp-mood {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 12px;
+          overflow: hidden;
+          cursor: pointer;
+          transition: all 0.25s;
+          text-align: left;
+          font-family: inherit;
+          padding: 0;
+        }
+        .snp-mood:hover {
+          transform: translateY(-3px);
+          border-color: var(--snp-accent);
+          box-shadow: 0 8px 20px rgba(196, 117, 107, 0.12);
+        }
+        .snp-mood-stage {
+          aspect-ratio: 4/3;
+          position: relative;
+          overflow: hidden;
+        }
+        .snp-mood-stage.warm {
+          background: linear-gradient(135deg, #F5EFE6, #E8D5CB);
+        }
+        .snp-mood-stage.modern {
+          background: linear-gradient(135deg, #2C2520, #5C544D);
+        }
+        .snp-mood-stage.magazine {
+          background: linear-gradient(135deg, #FAF6F1, #FFFFFF);
+        }
+        .snp-mood-stage.illust {
+          background: linear-gradient(135deg, #F3E5DF, #C4756B);
+        }
+        .snp-mood-text {
+          padding: 12px 14px;
+        }
+        .snp-mood-text .ttl {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 18px;
+          font-weight: 600;
+          font-style: italic;
+          margin: 0 0 2px;
+        }
+        .snp-mood-text .sub {
+          font-size: 11px;
+          color: var(--snp-muted);
+        }
+        .snp-mood-mini-card {
+          position: absolute;
+          background: white;
+          width: 60%;
+          height: 75%;
+          top: 12.5%;
+          left: 20%;
+          padding: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .snp-mood-mini-card .ph {
+          flex: 1;
+          background: linear-gradient(135deg, #d4bfb3, #c4a896);
+        }
+        .snp-mood-stage.modern .snp-mood-mini-card { background: #1a1410; color: white; }
+        .snp-mood-stage.modern .snp-mood-mini-card .ph { background: linear-gradient(135deg, #4a3f38, #2a2220); }
+        .snp-mood-stage.illust .snp-mood-mini-card .ph {
+          background: linear-gradient(135deg, #C4756B, #9A5247);
+        }
+
+        /* 생성 중 */
+        .snp-generating {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 18px;
+          border-top-left-radius: 4px;
+          padding: 24px 20px;
+          text-align: center;
+        }
+        .snp-generating-icon {
+          width: 48px; height: 48px;
+          background: var(--snp-accent-soft);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+          color: var(--snp-accent);
+          animation: snp-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes snp-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.08); opacity: 0.8; }
+        }
+        .snp-generating-text {
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 17px;
+          color: var(--snp-fg-soft);
+        }
+        .snp-generating-progress {
+          margin-top: 12px;
+          font-size: 12px;
+          color: var(--snp-muted);
+          line-height: 1.8;
+        }
+
+        /* 포토북 프리뷰 */
+        .snp-pb-preview {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 16px;
+          overflow: hidden;
+          max-width: 100%;
+        }
+        .snp-pb-head {
+          padding: 14px 18px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid var(--snp-line);
+        }
+        .snp-pb-head h3 {
+          margin: 0;
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 22px;
+          font-weight: 600;
+          color: var(--snp-fg);
+        }
+        .snp-pb-meta {
+          font-size: 11px;
+          color: var(--snp-accent);
+          background: var(--snp-accent-soft);
+          padding: 4px 10px;
+          border-radius: 10px;
+          font-weight: 600;
+        }
+
+        .snp-pb-stage {
+          padding: 24px 20px;
+          background: linear-gradient(160deg, var(--snp-bg-warm), var(--snp-bg));
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 240px;
+          position: relative;
+        }
+        .snp-pb-book {
+          display: flex;
+          gap: 0;
+          box-shadow: 0 16px 40px rgba(44, 37, 32, 0.18), 0 4px 12px rgba(44, 37, 32, 0.1);
+          background: white;
+          max-width: 100%;
+        }
+        .snp-pb-page {
+          width: 140px;
+          aspect-ratio: 4/5;
+          background: white;
+          padding: 16px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          position: relative;
+        }
+        @media (max-width: 480px) {
+          .snp-pb-page { width: 120px; padding: 12px 10px; }
+        }
+        .snp-pb-page.left { border-right: 1px solid #f0e6d8; }
+        .snp-pb-page-photo {
+          flex: 1;
+          background: linear-gradient(135deg, #d4bfb3, #c4a896);
+          position: relative;
+          overflow: hidden;
+        }
+        .snp-pb-page-photo::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.3), transparent 60%);
+        }
+        .snp-pb-page-photo.alt {
+          background: linear-gradient(135deg, #f3e5df, #c4756b);
+        }
+        .snp-pb-page-caption {
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 11px;
+          color: var(--snp-fg-soft);
+          line-height: 1.4;
+        }
+        .snp-pb-page-chapter {
+          font-size: 9px;
+          letter-spacing: 0.15em;
+          color: var(--snp-muted);
+          text-transform: uppercase;
+          font-family: 'Cormorant Garamond', serif;
+          font-weight: 600;
+        }
+        .snp-pb-message {
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 14px;
+          color: var(--snp-accent);
+          text-align: center;
+          padding: 8px;
+          line-height: 1.5;
+          animation: snp-fade-in 0.6s ease-out;
+        }
+        @keyframes snp-fade-in {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        .snp-pb-pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 16px;
+          padding: 12px;
+          border-top: 1px solid var(--snp-line);
+          font-size: 12px;
+          color: var(--snp-muted);
+        }
+        .snp-pb-pagination button {
+          background: transparent;
+          border: 1px solid var(--snp-line);
+          width: 28px; height: 28px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--snp-fg-soft);
+        }
+        .snp-pb-pagination button:hover { background: var(--snp-bg-warm); }
+
+        .snp-pb-info {
+          padding: 16px 18px;
+          background: var(--snp-bg-warm);
+          font-size: 12px;
+          line-height: 1.7;
+          color: var(--snp-fg-soft);
+        }
+        .snp-pb-info .row {
+          display: flex;
+          justify-content: space-between;
+        }
+        .snp-pb-info strong {
+          color: var(--snp-fg);
+          font-weight: 600;
+        }
+
+        .snp-modify-prompt {
+          padding: 14px 18px;
+          border-top: 1px solid var(--snp-line);
+          background: var(--snp-card);
+          font-size: 13px;
+          color: var(--snp-fg-soft);
+          font-style: italic;
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 16px;
+        }
+        .snp-modify-prompt .examples {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 10px;
+          font-style: normal;
+          font-family: 'Pretendard', sans-serif;
+        }
+        .snp-modify-prompt .ex {
+          background: var(--snp-bg-warm);
+          padding: 6px 10px;
+          border-radius: 12px;
+          font-size: 11px;
+          cursor: pointer;
+          border: 1px solid transparent;
+          color: var(--snp-fg-soft);
+          font-weight: 500;
+        }
+        .snp-modify-prompt .ex:hover {
+          border-color: var(--snp-accent);
+          background: var(--snp-accent-soft);
+          color: var(--snp-accent);
+        }
+
+        .snp-pb-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          border-top: 1px solid var(--snp-line);
+        }
+        .snp-pb-action {
+          padding: 16px;
+          background: var(--snp-card);
+          border: none;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          color: var(--snp-fg);
+        }
+        .snp-pb-action:hover { background: var(--snp-bg-warm); }
+        .snp-pb-action + .snp-pb-action { border-left: 1px solid var(--snp-line); }
+        .snp-pb-action.primary {
+          background: var(--snp-accent);
+          color: white;
+        }
+        .snp-pb-action.primary:hover { background: #B05F55; }
+
+        /* 옵션 */
+        .snp-options {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 16px;
+          padding: 18px;
+        }
+        .snp-options h4 {
+          margin: 0 0 12px;
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 18px;
+          font-weight: 600;
+        }
+        .snp-options-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin-bottom: 16px;
+        }
+        .snp-option-cover {
+          aspect-ratio: 3/4;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: 2px solid transparent;
+          position: relative;
+          overflow: hidden;
+        }
+        .snp-option-cover.selected {
+          border-color: var(--snp-accent);
+          box-shadow: 0 4px 12px rgba(196, 117, 107, 0.2);
+        }
+        .snp-option-cover .lbl {
+          position: absolute;
+          bottom: 8px;
+          left: 8px;
+          right: 8px;
+          font-size: 10px;
+          font-weight: 600;
+          color: white;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 12px;
+        }
+        .snp-option-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid var(--snp-line);
+          font-size: 13px;
+        }
+        .snp-option-row:last-of-type { border-bottom: none; }
+        .snp-option-row .lbl { color: var(--snp-fg-soft); }
+        .snp-option-row .val { font-weight: 600; color: var(--snp-fg); }
+        .snp-option-cta {
+          width: 100%;
+          margin-top: 12px;
+          background: var(--snp-fg);
+          color: white;
+          border: none;
+          padding: 14px;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          border-radius: 10px;
+        }
+        .snp-option-cta:hover { background: #1a1410; }
+
+        /* 완료 */
+        .snp-complete {
+          background: var(--snp-card);
+          border: 1px solid var(--snp-line);
+          border-radius: 16px;
+          padding: 32px 24px;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+        .snp-complete::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 20% 0%, var(--snp-accent-soft), transparent 50%),
+                      radial-gradient(circle at 80% 100%, var(--snp-bg-warm), transparent 50%);
+          opacity: 0.7;
+        }
+        .snp-complete-inner { position: relative; z-index: 1; }
+        .snp-complete-icon {
+          width: 64px; height: 64px;
+          background: var(--snp-accent);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 16px;
+        }
+        .snp-complete h3 {
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 28px;
+          font-weight: 600;
+          margin: 0 0 6px;
+          color: var(--snp-fg);
+        }
+        .snp-complete p {
+          font-size: 13px;
+          color: var(--snp-fg-soft);
+          margin: 0;
+        }
+        .snp-complete-note {
+          margin-top: 20px;
+          padding: 16px;
+          background: var(--snp-bg-warm);
+          border-radius: 10px;
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          font-size: 14px;
+          color: var(--snp-fg-soft);
+          line-height: 1.6;
+        }
+
+        .snp-input-wrap {
+          position: fixed;
+          bottom: 0; left: 0; right: 0;
+          background: var(--snp-card);
+          border-top: 1px solid var(--snp-line);
+          padding: 12px 20px;
+        }
+        .snp-input-inner {
+          max-width: 720px;
+          margin: 0 auto;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          background: var(--snp-bg);
+          padding: 8px 8px 8px 16px;
+          border-radius: 24px;
+          border: 1px solid var(--snp-line);
+        }
+        .snp-input-inner input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          font-family: inherit;
+          font-size: 14px;
+          color: var(--snp-fg);
+        }
+        .snp-input-inner button {
+          width: 38px; height: 38px;
+          background: var(--snp-accent);
+          color: white;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .snp-editor-bridge {
+          background: var(--snp-card);
+          border: 1px dashed var(--snp-line);
+          padding: 24px;
+          text-align: center;
+          border-radius: 14px;
+          font-family: 'Cormorant Garamond', serif;
+          font-style: italic;
+          color: var(--snp-fg-soft);
+        }
+      `}</style>
+
+      <header className="snp-header">
+        <div className="snp-brand">
+          <div className="snp-brand-mark">snaps</div>
+          <div className="snp-brand-text">AI Studio</div>
+        </div>
+        <div className="snp-step">step {Math.min(step + 1, 7)} / 7</div>
+      </header>
+
+      <main className="snp-chat">
+        {messages.map((msg) => (
+          <PhotoBookMessage
+            key={msg.id}
+            msg={msg}
+            onProductChoice={handleProductChoice}
+            onIntent={handleIntent}
+            onSource={handleSource}
+            onMood={handleMood}
+            onPreviewAction={handlePreviewAction}
+            onOrder={handleOrder}
+          />
+        ))}
+
+        {isTyping && (
+          <div className="snp-msg bot">
+            <div className="snp-typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </main>
+
+      <div className="snp-input-wrap">
+        <div className="snp-input-inner">
+          <input placeholder="메시지를 입력하세요..." disabled />
+          <button disabled><Send size={16} /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PhotoBookMessage({ msg, onProductChoice, onIntent, onSource, onMood, onPreviewAction, onOrder }) {
+  if (msg.sender === 'user') {
+    return <div className="snp-msg user"><div className="snp-bubble">{msg.content}</div></div>;
+  }
+
+  if (msg.type === 'text') {
+    return <div className="snp-msg bot"><div className="snp-bubble">{msg.content}</div></div>;
+  }
+
+  if (msg.type === 'chips') {
+    return (
+      <div className="snp-msg bot">
+        <div className="snp-chips">
+          {msg.chips.map((chip, i) => (
+            <button key={i} className="snp-chip" onClick={() => onProductChoice(chip)}>{chip}</button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'free-input') {
+    return (
+      <div className="snp-msg bot" style={{ maxWidth: '95%' }}>
+        <div className="snp-free">
+          <div className="snp-free-hint">{msg.placeholder}</div>
+          <div className="snp-chips">
+            {msg.suggestions.map((s, i) => (
+              <button key={i} className="snp-chip" onClick={() => onIntent(s)}>{s}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'source-cards') {
+    const sources = [
+      { icon: <Image size={18} />, name: '내 앨범에서 가져오기', desc: '스마트폰 사진첩 연결' },
+      { icon: <BookOpen size={18} />, name: '지난 스냅스 작업물', desc: '이전 포토북에서 사진 가져오기' },
+      { icon: <Camera size={18} />, name: '클라우드에서 가져오기', desc: 'iCloud, Google Photos 등' },
+    ];
+    return (
+      <div className="snp-msg bot" style={{ maxWidth: '95%' }}>
+        <div className="snp-sources">
+          {sources.map((s, i) => (
+            <button key={i} className="snp-source" onClick={() => onSource(s.name)}>
+              <div className="snp-source-icon">{s.icon}</div>
+              <div className="snp-source-text">
+                <div className="name">{s.name}</div>
+                <div className="desc">{s.desc}</div>
+              </div>
+              <ChevronRight size={16} style={{ color: 'var(--snp-muted)' }} />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'photo-uploaded') {
+    return (
+      <div className="snp-msg bot" style={{ maxWidth: '95%' }}>
+        <div className="snp-uploaded">
+          <div className="snp-uploaded-grid">
+            {[...Array(24)].map((_, i) => <div key={i} className="snp-uploaded-thumb"></div>)}
+          </div>
+          <div className="snp-uploaded-info">
+            <div>
+              <div className="ct">{msg.count}</div>
+              <div className="lbl">장의 추억을 받았어요</div>
+            </div>
+            <Heart size={20} style={{ color: 'var(--snp-accent)' }} fill="currentColor" />
+          </div>
+          <div className="snp-ai-process">
+            <Sparkles size={12} />
+            중복·흐림 제거 중 → 시간순 정렬 → 월별 챕터 생성
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'mood-grid') {
+    const moods = [
+      { key: 'warm', name: '따뜻한 톤', sub: 'Soft & gentle', desc: '베이지·아이보리' },
+      { key: 'modern', name: '모던', sub: 'Clean & quiet', desc: '딥 그레이' },
+      { key: 'magazine', name: '매거진', sub: 'Editorial', desc: '여백의 미' },
+      { key: 'illust', name: '일러스트', sub: 'Playful', desc: '컬러 가미' },
+    ];
+    return (
+      <div className="snp-msg bot" style={{ maxWidth: '100%' }}>
+        <div className="snp-moods">
+          {moods.map((m) => (
+            <button key={m.key} className="snp-mood" onClick={() => onMood(m.name)}>
+              <div className={`snp-mood-stage ${m.key}`}>
+                <div className="snp-mood-mini-card">
+                  <div className="ph"></div>
+                  <div className="ph" style={{ flex: 0.4 }}></div>
+                </div>
+              </div>
+              <div className="snp-mood-text">
+                <div className="ttl">{m.name}</div>
+                <div className="sub">{m.sub} · {m.desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'generating') {
+    return (
+      <div className="snp-msg bot">
+        <div className="snp-generating">
+          <div className="snp-generating-icon"><Sparkles size={22} /></div>
+          <div className="snp-generating-text">100p 포토북을 만들고 있어요</div>
+          <div className="snp-generating-progress">
+            ✓ 847장에서 612장 선별<br/>
+            ✓ 시간순 자동 정렬 완료<br/>
+            ◌ 월별 챕터 + 캡션 생성 중...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'photobook-preview') {
+    return (
+      <div className="snp-msg bot" style={{ maxWidth: '100%' }}>
+        <div className="snp-pb-preview">
+          <div className="snp-pb-head">
+            <h3>우리 아이, 첫 1년</h3>
+            <span className="snp-pb-meta">100p · AI 생성 완료</span>
+          </div>
+
+          <div className="snp-pb-stage">
+            <div className="snp-pb-book">
+              <div className="snp-pb-page left">
+                <div className="snp-pb-page-chapter">— March —</div>
+                <div className="snp-pb-page-photo"></div>
+                <div className="snp-pb-page-caption">"첫 봄, 작은 손이 햇살을 잡았다"</div>
+              </div>
+              <div className="snp-pb-page">
+                {msg.modified ? (
+                  <>
+                    <div className="snp-pb-page-chapter">— Last Page —</div>
+                    <div className="snp-pb-message">
+                      엄마 아빠가<br/>사랑해 💌
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="snp-pb-page-chapter">— March —</div>
+                    <div className="snp-pb-page-photo alt"></div>
+                    <div className="snp-pb-page-caption">처음 본 벚꽃</div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="snp-pb-pagination">
+            <button><ChevronLeft size={14} /></button>
+            <span>{msg.modified ? '99-100' : '8-9'} / 100</span>
+            <button><ChevronRight size={14} /></button>
+          </div>
+
+          <div className="snp-pb-info">
+            <div className="row"><span>챕터</span><strong>12개월 자동 분할</strong></div>
+            <div className="row"><span>캡션</span><strong>AI 자동 제안 (수정 가능)</strong></div>
+            <div className="row"><span>판형</span><strong>스탠다드 정사각</strong></div>
+          </div>
+
+          {!msg.modified && (
+            <div className="snp-modify-prompt">
+              "마음에 들지 않는 부분이 있나요? 말로 알려주세요."
+              <div className="examples">
+                <div className="ex" onClick={() => onPreviewAction('modify')}>
+                  마지막 페이지에 메시지 추가
+                </div>
+                <div className="ex">3월 챕터 캡션을 다정하게</div>
+                <div className="ex">표지 사진 바꾸기</div>
+              </div>
+            </div>
+          )}
+
+          <div className="snp-pb-actions">
+            <button className="snp-pb-action" onClick={() => onPreviewAction('edit')}>
+              <Edit3 size={14} /> 편집
+            </button>
+            <button className="snp-pb-action" onClick={() => onPreviewAction('modify')}>
+              <Sparkles size={14} /> 수정
+            </button>
+            <button className="snp-pb-action primary" onClick={() => onPreviewAction('order')}>
+              <Check size={14} /> 주문하기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'options') {
+    const covers = [
+      { name: '패브릭', bg: 'linear-gradient(135deg, #E8D5CB, #C4A896)', selected: true },
+      { name: '하드', bg: 'linear-gradient(135deg, #2C2520, #5C544D)' },
+      { name: '레더', bg: 'linear-gradient(135deg, #8B6F47, #6B5535)' },
+    ];
+    return (
+      <div className="snp-msg bot" style={{ maxWidth: '95%' }}>
+        <div className="snp-options">
+          <h4>마지막 한 단계만 더 ✨</h4>
+          <div className="snp-options-grid">
+            {covers.map((c, i) => (
+              <div key={i} className={`snp-option-cover ${c.selected ? 'selected' : ''}`} style={{ background: c.bg }}>
+                <div className="lbl">{c.name}{c.selected ? ' ✓' : ''}</div>
+              </div>
+            ))}
+          </div>
+          <div className="snp-option-row">
+            <span className="lbl">수량</span>
+            <span className="val">2권 (양가용)</span>
+          </div>
+          <div className="snp-option-row">
+            <span className="lbl">내지</span>
+            <span className="val">스탠다드 레이플랫</span>
+          </div>
+          <div className="snp-option-row">
+            <span className="lbl">합계</span>
+            <span className="val" style={{ fontSize: 18, color: 'var(--snp-accent)' }}>134,000원</span>
+          </div>
+          <button className="snp-option-cta" onClick={onOrder}>이대로 주문하기</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'order-complete') {
+    return (
+      <div className="snp-msg bot" style={{ maxWidth: '100%' }}>
+        <div className="snp-complete">
+          <div className="snp-complete-inner">
+            <div className="snp-complete-icon">
+              <Check size={32} strokeWidth={3} />
+            </div>
+            <h3>고이 보내드릴게요</h3>
+            <p>주문번호 #2026-S0429 · 5일 후 도착</p>
+            <div className="snp-complete-note">
+              "847장 중 가장 빛나는 612장을<br/>
+              한 권의 책으로 묶었어요. 도착하면 함께 펼쳐보세요."
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'editor-bridge') {
+    return (
+      <div className="snp-msg bot">
+        <div className="snp-editor-bridge">
+          편집기로 모실게요. 시안은 그대로 가져갑니다.
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<SnapsPhotoBookChat />);
+  </script>
+</body>
+</html>

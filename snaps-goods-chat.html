@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스냅스 Goods Studio — AI 챗 프로토타입</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { width: 100%; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // ── Lucide Icon Components ──
+    
+const Send = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+  </svg>
+);
+
+const Sparkles = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M12 3l-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>
+  </svg>
+);
+
+const Check = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const Upload = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+);
+
+const Plus = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const Minus = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const Calendar = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+const Truck = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+  </svg>
+);
+
+const Heart = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>
+);
+
+const RotateCcw = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+  </svg>
+);
+
+const Edit3 = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+  </svg>
+);
+
+const ChevronLeft = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+);
+
+const ChevronRight = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
+
+const Image = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+  </svg>
+);
+
+const BookOpen = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  </svg>
+);
+
+const Camera = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+  </svg>
+);
+
+const Clock = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+const Package = ({ size = 24, strokeWidth = 2, fill = "none", style = {}, ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style} {...props}>
+    <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+  </svg>
+);
+
+    // ── Main Component ──
+    function SnapsGoodsChat() {
+  const [messages, setMessages] = useState([]);
+  const [step, setStep] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+  const [selected, setSelected] = useState(new Set()); // 시안 그리드 선택
+  const [quantities, setQuantities] = useState({ keyring: 30, stand: 10, case: 15, badge: 25 });
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    setTimeout(() => addBotMessage({ type: 'text', content: '안녕하세요 민호님 ✨' }), 400);
+    setTimeout(() => addBotMessage({ type: 'text', content: '오늘은 어떤 굿즈를 만들어볼까요?' }), 1200);
+    setTimeout(() => addBotMessage({
+      type: 'free-input',
+      placeholder: '예) 이번 주말 마켓에 들고 갈 굿즈 4종',
+      suggestions: [
+        '🎪 마켓 출품용 굿즈',
+        '🎁 팬 선물용 굿즈',
+        '✨ 신작 IP 시즌 굿즈',
+        '직접 입력하기'
+      ],
+      action: 'intent'
+    }), 1800);
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const addBotMessage = (msg) => {
+    setMessages(prev => [...prev, { ...msg, sender: 'bot', id: Date.now() + Math.random() }]);
+  };
+
+  const addUserMessage = (content) => {
+    setMessages(prev => [...prev, { type: 'text', content, sender: 'user', id: Date.now() + Math.random() }]);
+  };
+
+  const showTyping = (delay = 800) => {
+    return new Promise(resolve => {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        resolve();
+      }, delay);
+    });
+  };
+
+  const handleIntent = async (intent) => {
+    addUserMessage("이번 주말 마켓에 들고 갈 'Bunny Doodle' 굿즈 4종 만들고 싶어");
+    setStep(1);
+    await showTyping(1200);
+    addBotMessage({
+      type: 'text',
+      content: '마켓 일정을 기억해둘게요 📅 어떤 굿즈를 만들지 골라주세요. 여러 개 선택할 수 있어요.'
+    });
+    await new Promise(r => setTimeout(r, 400));
+    addBotMessage({ type: 'goods-picker', action: 'goods' });
+  };
+
+  const handleGoodsConfirm = async (selectedGoods) => {
+    addUserMessage(`${selectedGoods.join(' · ')} 4종 모두 선택`);
+    setStep(2);
+    await showTyping(1100);
+    addBotMessage({
+      type: 'text',
+      content: '아트웍 파일을 한 번에 업로드해주세요. PNG · JPG · PSD · AI 모두 OK 👌'
+    });
+    await new Promise(r => setTimeout(r, 400));
+    addBotMessage({ type: 'upload-zone', action: 'upload' });
+  };
+
+  const handleUpload = async () => {
+    addUserMessage("'Bunny Doodle' 캐릭터 8종 일괄 업로드");
+    setStep(3);
+    await showTyping(1100);
+    addBotMessage({ type: 'ai-process' });
+    await new Promise(r => setTimeout(r, 3200));
+    addBotMessage({
+      type: 'text',
+      content: '✨ 4종 × 8캐릭터 = 32개 시안을 만들었어요! 굿즈별로 마음에 드는 디자인을 골라주세요.'
+    });
+    await new Promise(r => setTimeout(r, 600));
+    addBotMessage({ type: 'design-grid', action: 'grid' });
+  };
+
+  const handleGridConfirm = async () => {
+    addUserMessage(`키링 5종 · 등신대 2종 · 폰케이스 3종 · 핀뱃지 4종 선택 (총 ${selected.size}종)`);
+    setStep(4);
+    await showTyping(900);
+    addBotMessage({
+      type: 'text',
+      content: '굿즈별 수량을 정해주세요. 마켓이 토요일이라고 하셨으니 금요일 도착 옵션도 함께 추천드려요.'
+    });
+    await new Promise(r => setTimeout(r, 400));
+    addBotMessage({ type: 'quantity-shipping', action: 'qs' });
+  };
+
+  const handleOrder = async () => {
+    addUserMessage('한 번에 주문할게요');
+    setStep(5);
+    await showTyping(1100);
+    addBotMessage({ type: 'order-complete' });
+  };
+
+  return (
+    <div className="snpg-root">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&family=Caveat:wght@400;700&display=swap');
+
+        .snpg-root {
+          --snpg-bg: #FFF9F0;
+          --snpg-bg-2: #FFEEDD;
+          --snpg-fg: #1A1814;
+          --snpg-fg-soft: #5C5550;
+          --snpg-muted: #9A938C;
+          --snpg-line: #F0E5D2;
+          --snpg-card: #FFFFFF;
+          --snpg-accent: #FF6B35;
+          --snpg-accent-2: #FFB627;
+          --snpg-accent-soft: #FFE8DC;
+          --snpg-bunny: #FFB6C1;
+          --snpg-bunny-2: #FF8FA3;
+          --snpg-user-bg: #1A1814;
+
+          font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+          background: var(--snpg-bg);
+          color: var(--snpg-fg);
+          min-height: 100vh;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          letter-spacing: -0.01em;
+          -webkit-font-smoothing: antialiased;
+          background-image: radial-gradient(circle at 20% 10%, var(--snpg-bg-2) 0%, transparent 25%),
+                            radial-gradient(circle at 80% 70%, var(--snpg-accent-soft) 0%, transparent 30%);
+        }
+
+        .snpg-header {
+          background: var(--snpg-card);
+          border-bottom: 2px solid var(--snpg-fg);
+          padding: 14px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+        .snpg-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .snpg-brand-mark {
+          font-family: 'Caveat', cursive;
+          font-size: 32px;
+          font-weight: 700;
+          color: var(--snpg-accent);
+          line-height: 1;
+        }
+        .snpg-brand-text {
+          font-size: 12px;
+          color: var(--snpg-fg-soft);
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+        .snpg-brand-text small {
+          background: var(--snpg-fg);
+          color: var(--snpg-bg-2);
+          padding: 2px 6px;
+          font-size: 9px;
+          margin-left: 4px;
+          font-family: 'Space Mono', monospace;
+          letter-spacing: 0.05em;
+        }
+        .snpg-step {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          color: var(--snpg-fg);
+          letter-spacing: 0.05em;
+          background: var(--snpg-accent-2);
+          padding: 4px 10px;
+          font-weight: 700;
+        }
+
+        .snpg-chat {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px 16px 100px;
+          max-width: 760px;
+          width: 100%;
+          margin: 0 auto;
+        }
+
+        .snpg-msg {
+          margin-bottom: 14px;
+          animation: snpg-pop 0.45s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+          max-width: 90%;
+        }
+        @keyframes snpg-pop {
+          from { opacity: 0; transform: translateY(12px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .snpg-msg.user { margin-left: auto; }
+
+        .snpg-bubble {
+          padding: 12px 18px;
+          font-size: 15px;
+          line-height: 1.55;
+          border-radius: 18px;
+          font-weight: 500;
+        }
+        .snpg-msg.bot .snpg-bubble {
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          border-top-left-radius: 4px;
+          box-shadow: 4px 4px 0 var(--snpg-fg);
+        }
+        .snpg-msg.user .snpg-bubble {
+          background: var(--snpg-fg);
+          color: var(--snpg-bg);
+          border-top-right-radius: 4px;
+        }
+
+        .snpg-typing {
+          display: inline-flex;
+          gap: 5px;
+          padding: 14px 18px;
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          border-radius: 18px;
+          border-top-left-radius: 4px;
+          box-shadow: 4px 4px 0 var(--snpg-fg);
+        }
+        .snpg-typing span {
+          width: 8px; height: 8px;
+          background: var(--snpg-accent);
+          border-radius: 50%;
+          animation: snpg-bounce 1.2s infinite;
+        }
+        .snpg-typing span:nth-child(2) { animation-delay: 0.15s; background: var(--snpg-accent-2); }
+        .snpg-typing span:nth-child(3) { animation-delay: 0.3s; background: var(--snpg-bunny-2); }
+        @keyframes snpg-bounce {
+          0%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-6px); }
+        }
+
+        .snpg-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 4px;
+        }
+        .snpg-chip {
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          padding: 9px 14px;
+          font-size: 14px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.15s;
+          border-radius: 20px;
+          color: var(--snpg-fg);
+          font-weight: 600;
+          box-shadow: 2px 2px 0 var(--snpg-fg);
+        }
+        .snpg-chip:hover {
+          background: var(--snpg-accent-2);
+          transform: translate(-2px, -2px);
+          box-shadow: 4px 4px 0 var(--snpg-fg);
+        }
+
+        .snpg-free {
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          border-radius: 18px;
+          border-top-left-radius: 4px;
+          padding: 14px;
+          box-shadow: 4px 4px 0 var(--snpg-fg);
+        }
+        .snpg-free-hint {
+          font-family: 'Caveat', cursive;
+          font-size: 18px;
+          color: var(--snpg-accent);
+          margin-bottom: 10px;
+          padding-left: 4px;
+        }
+
+        /* 굿즈 픽커 */
+        .snpg-goods {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+        @media (max-width: 480px) {
+          .snpg-goods { grid-template-columns: repeat(2, 1fr); }
+        }
+        .snpg-good {
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          border-radius: 12px;
+          padding: 14px 10px;
+          cursor: pointer;
+          transition: all 0.15s;
+          text-align: center;
+          font-family: inherit;
+          box-shadow: 3px 3px 0 var(--snpg-fg);
+          position: relative;
+        }
+        .snpg-good:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0 var(--snpg-fg);
+        }
+        .snpg-good.selected {
+          background: var(--snpg-accent);
+          color: white;
+        }
+        .snpg-good-shape {
+          width: 40px; height: 40px;
+          margin: 0 auto 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--snpg-bg-2);
+          border-radius: 50%;
+        }
+        .snpg-good.selected .snpg-good-shape {
+          background: rgba(255,255,255,0.3);
+        }
+        .snpg-good-name {
+          font-size: 13px;
+          font-weight: 700;
+          margin-bottom: 2px;
+        }
+        .snpg-good-desc {
+          font-size: 10px;
+          opacity: 0.7;
+        }
+        .snpg-good-check {
+          position: absolute;
+          top: 6px; right: 6px;
+          width: 18px; height: 18px;
+          background: var(--snpg-fg);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+        }
+        .snpg-good.selected .snpg-good-check { opacity: 1; }
+
+        .snpg-confirm-btn {
+          width: 100%;
+          background: var(--snpg-fg);
+          color: white;
+          border: none;
+          padding: 14px;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          border-radius: 12px;
+          letter-spacing: -0.01em;
+        }
+        .snpg-confirm-btn:hover { background: var(--snpg-accent); }
+        .snpg-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* 업로드 존 */
+        .snpg-upload {
+          background: var(--snpg-card);
+          border: 2px dashed var(--snpg-fg);
+          border-radius: 16px;
+          padding: 28px 20px;
+          text-align: center;
+          cursor: pointer;
+          font-family: inherit;
+          width: 100%;
+          transition: all 0.15s;
+        }
+        .snpg-upload:hover {
+          background: var(--snpg-accent-soft);
+          border-color: var(--snpg-accent);
+        }
+        .snpg-upload-icon {
+          width: 56px; height: 56px;
+          background: var(--snpg-accent);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+        }
+        .snpg-upload-text {
+          font-size: 15px;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+        .snpg-upload-sub {
+          font-size: 11px;
+          color: var(--snpg-muted);
+          font-family: 'Space Mono', monospace;
+        }
+
+        /* AI 처리 중 */
+        .snpg-process {
+          background: var(--snpg-fg);
+          color: white;
+          border-radius: 16px;
+          padding: 22px;
+        }
+        .snpg-process-title {
+          font-family: 'Caveat', cursive;
+          font-size: 24px;
+          color: var(--snpg-accent-2);
+          margin-bottom: 14px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .snpg-process-step {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 0;
+          font-size: 13px;
+          font-family: 'Space Mono', monospace;
+        }
+        .snpg-process-step .check {
+          width: 18px; height: 18px;
+          background: var(--snpg-accent-2);
+          color: var(--snpg-fg);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-weight: 700;
+        }
+        .snpg-process-step.pending .check {
+          background: rgba(255,255,255,0.15);
+          color: white;
+          animation: snpg-spin 1s linear infinite;
+        }
+        @keyframes snpg-spin {
+          to { transform: rotate(360deg); }
+        }
+        .snpg-process-counter {
+          margin-top: 14px;
+          padding-top: 14px;
+          border-top: 1px solid rgba(255,255,255,0.15);
+          font-family: 'Caveat', cursive;
+          font-size: 26px;
+          color: var(--snpg-accent-2);
+          text-align: center;
+        }
+
+        /* 디자인 그리드 */
+        .snpg-grid-wrap {
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 4px 4px 0 var(--snpg-fg);
+        }
+        .snpg-grid-head {
+          background: var(--snpg-fg);
+          color: white;
+          padding: 12px 16px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .snpg-grid-head h3 {
+          margin: 0;
+          font-family: 'Caveat', cursive;
+          font-size: 26px;
+          color: var(--snpg-accent-2);
+          line-height: 1;
+        }
+        .snpg-grid-head .meta {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          opacity: 0.8;
+        }
+
+        .snpg-product-section {
+          border-bottom: 1px solid var(--snpg-line);
+        }
+        .snpg-product-section:last-child { border-bottom: none; }
+        .snpg-product-head {
+          padding: 12px 16px 6px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: var(--snpg-bg);
+        }
+        .snpg-product-head h4 {
+          margin: 0;
+          font-size: 13px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .snpg-product-head .count {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          color: var(--snpg-accent);
+          font-weight: 700;
+        }
+
+        .snpg-design-grid {
+          display: grid;
+          grid-template-columns: repeat(8, 1fr);
+          gap: 4px;
+          padding: 8px;
+        }
+        @media (max-width: 600px) {
+          .snpg-design-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .snpg-design {
+          aspect-ratio: 1;
+          background: var(--snpg-bg);
+          border: 2px solid transparent;
+          border-radius: 8px;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          transition: all 0.15s;
+        }
+        .snpg-design.selected {
+          border-color: var(--snpg-accent);
+          box-shadow: 0 0 0 2px white, 0 0 0 4px var(--snpg-accent);
+        }
+        .snpg-design:hover { transform: scale(1.05); }
+
+        .snpg-design-check {
+          position: absolute;
+          top: 4px; right: 4px;
+          width: 18px; height: 18px;
+          background: var(--snpg-accent);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.15s;
+          z-index: 2;
+        }
+        .snpg-design.selected .snpg-design-check { opacity: 1; }
+
+        /* Bunny Doodle 캐릭터 (SVG) */
+        .snpg-bunny-art {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
+        }
+
+        /* 굿즈 형태별 배경 */
+        .snpg-design.keyring { background: linear-gradient(135deg, #FFF9F0, #FFE8DC); }
+        .snpg-design.stand { background: linear-gradient(135deg, #FFEEDD, #FFB627); }
+        .snpg-design.case {
+          background: linear-gradient(135deg, #1A1814, #5C5550);
+        }
+        .snpg-design.case .snpg-bunny-art { filter: brightness(0.95); }
+        .snpg-design.badge {
+          background: radial-gradient(circle, #FFE8DC, #FFB627);
+          border-radius: 50%;
+        }
+        .snpg-design.badge.selected {
+          border-radius: 50%;
+        }
+
+        .snpg-grid-foot {
+          padding: 14px 16px;
+          background: var(--snpg-accent-soft);
+          border-top: 2px solid var(--snpg-fg);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .snpg-grid-foot .summary {
+          font-size: 13px;
+        }
+        .snpg-grid-foot .summary .num {
+          font-family: 'Caveat', cursive;
+          font-size: 22px;
+          color: var(--snpg-accent);
+          font-weight: 700;
+          margin-right: 4px;
+        }
+
+        /* 수량 + 배송 */
+        .snpg-qs {
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 4px 4px 0 var(--snpg-fg);
+        }
+        .snpg-qs-deadline {
+          background: var(--snpg-fg);
+          color: white;
+          padding: 10px 16px;
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .snpg-qs-deadline strong {
+          color: var(--snpg-accent-2);
+          margin-left: auto;
+        }
+        .snpg-qs-list { padding: 4px 0; }
+        .snpg-qs-row {
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          border-bottom: 1px solid var(--snpg-line);
+        }
+        .snpg-qs-row:last-child { border-bottom: none; }
+        .snpg-qs-icon {
+          width: 32px; height: 32px;
+          background: var(--snpg-bg-2);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          flex-shrink: 0;
+        }
+        .snpg-qs-name {
+          flex: 1;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .snpg-qs-name .sub {
+          font-size: 11px;
+          color: var(--snpg-muted);
+          font-weight: 400;
+        }
+        .snpg-qs-counter {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: var(--snpg-bg);
+          border-radius: 20px;
+          padding: 2px;
+          border: 1px solid var(--snpg-line);
+        }
+        .snpg-qs-counter button {
+          width: 24px; height: 24px;
+          background: var(--snpg-card);
+          border: 1px solid var(--snpg-line);
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .snpg-qs-counter .num {
+          width: 32px;
+          text-align: center;
+          font-family: 'Space Mono', monospace;
+          font-weight: 700;
+          font-size: 13px;
+        }
+
+        .snpg-qs-shipping {
+          padding: 12px 16px;
+          background: var(--snpg-accent-soft);
+          border-top: 2px solid var(--snpg-fg);
+        }
+        .snpg-qs-ship-opt {
+          width: 100%;
+          padding: 10px 12px;
+          background: var(--snpg-accent);
+          color: white;
+          border: 2px solid var(--snpg-fg);
+          font-family: inherit;
+          cursor: pointer;
+          border-radius: 8px;
+          font-weight: 700;
+          font-size: 13px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .snpg-qs-ship-opt:hover {
+          background: #E55A26;
+        }
+
+        .snpg-qs-total {
+          padding: 14px 16px;
+          background: var(--snpg-fg);
+          color: white;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .snpg-qs-total .lbl { font-size: 12px; opacity: 0.7; }
+        .snpg-qs-total .price {
+          font-family: 'Caveat', cursive;
+          font-size: 28px;
+          color: var(--snpg-accent-2);
+          font-weight: 700;
+        }
+        .snpg-qs-cta {
+          width: 100%;
+          background: var(--snpg-accent);
+          color: white;
+          border: none;
+          padding: 16px;
+          font-family: inherit;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .snpg-qs-cta:hover { background: #E55A26; }
+
+        /* 완료 */
+        .snpg-complete {
+          background: var(--snpg-card);
+          border: 2px solid var(--snpg-fg);
+          border-radius: 16px;
+          padding: 28px 20px;
+          text-align: center;
+          box-shadow: 6px 6px 0 var(--snpg-fg);
+        }
+        .snpg-complete-icon {
+          width: 64px; height: 64px;
+          background: var(--snpg-accent);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 14px;
+          border: 3px solid var(--snpg-fg);
+        }
+        .snpg-complete h3 {
+          font-family: 'Caveat', cursive;
+          font-size: 36px;
+          margin: 0 0 4px;
+          color: var(--snpg-accent);
+          line-height: 1;
+        }
+        .snpg-complete p {
+          font-size: 13px;
+          color: var(--snpg-fg-soft);
+          margin: 0 0 16px;
+        }
+        .snpg-complete-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          padding: 14px;
+          background: var(--snpg-bg);
+          border-radius: 10px;
+          margin-bottom: 14px;
+        }
+        .snpg-complete-stat .num {
+          font-family: 'Caveat', cursive;
+          font-size: 28px;
+          font-weight: 700;
+          color: var(--snpg-accent);
+          line-height: 1;
+        }
+        .snpg-complete-stat .lbl {
+          font-size: 10px;
+          color: var(--snpg-muted);
+          font-family: 'Space Mono', monospace;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-top: 4px;
+        }
+        .snpg-complete-saved {
+          padding: 12px;
+          background: var(--snpg-accent-soft);
+          border-radius: 8px;
+          font-size: 12px;
+          color: var(--snpg-accent);
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+
+        .snpg-input-wrap {
+          position: fixed;
+          bottom: 0; left: 0; right: 0;
+          background: var(--snpg-card);
+          border-top: 2px solid var(--snpg-fg);
+          padding: 12px 16px;
+        }
+        .snpg-input-inner {
+          max-width: 760px;
+          margin: 0 auto;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          background: var(--snpg-bg);
+          padding: 6px 6px 6px 16px;
+          border-radius: 24px;
+          border: 2px solid var(--snpg-fg);
+        }
+        .snpg-input-inner input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          font-family: inherit;
+          font-size: 14px;
+          color: var(--snpg-fg);
+        }
+        .snpg-input-inner button {
+          width: 36px; height: 36px;
+          background: var(--snpg-accent);
+          color: white;
+          border: 2px solid var(--snpg-fg);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+      `}</style>
+
+      <header className="snpg-header">
+        <div className="snpg-brand">
+          <div className="snpg-brand-mark">snaps</div>
+          <div className="snpg-brand-text">
+            Goods Studio
+            <small>BETA</small>
+          </div>
+        </div>
+        <div className="snpg-step">{Math.min(step + 1, 6).toString().padStart(2, '0')}/06</div>
+      </header>
+
+      <main className="snpg-chat">
+        {messages.map((msg) => (
+          <GoodsMessage
+            key={msg.id}
+            msg={msg}
+            selected={selected}
+            setSelected={setSelected}
+            quantities={quantities}
+            setQuantities={setQuantities}
+            onIntent={handleIntent}
+            onGoodsConfirm={handleGoodsConfirm}
+            onUpload={handleUpload}
+            onGridConfirm={handleGridConfirm}
+            onOrder={handleOrder}
+          />
+        ))}
+
+        {isTyping && (
+          <div className="snpg-msg bot">
+            <div className="snpg-typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </main>
+
+      <div className="snpg-input-wrap">
+        <div className="snpg-input-inner">
+          <input placeholder="민호님, 메시지를 입력해보세요..." disabled />
+          <button disabled><Send size={16} /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Bunny Doodle SVG 캐릭터 (변형들)
+const BunnyArt = ({ variant = 0, dark = false }) => {
+  const colors = dark ?
+    { body: '#FFE8DC', ear: '#FFB6C1', accent: '#FF6B35', stroke: '#1A1814' } :
+    { body: '#FFB6C1', ear: '#FF8FA3', accent: '#FF6B35', stroke: '#1A1814' };
+
+  const variants = [
+    // 0: 기본 윙크
+    <svg viewBox="0 0 60 60" key="0">
+      <ellipse cx="20" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <ellipse cx="40" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <path d="M22 30 Q22 28 24 28" stroke={colors.stroke} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <circle cx="36" cy="30" r="1.5" fill={colors.stroke}/>
+      <path d="M28 36 Q30 38 32 36" stroke={colors.stroke} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <circle cx="24" cy="36" r="2" fill={colors.accent} opacity="0.4"/>
+      <circle cx="36" cy="36" r="2" fill={colors.accent} opacity="0.4"/>
+    </svg>,
+    // 1: 양쪽 눈
+    <svg viewBox="0 0 60 60" key="1">
+      <ellipse cx="20" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <ellipse cx="40" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="24" cy="30" r="1.5" fill={colors.stroke}/>
+      <circle cx="36" cy="30" r="1.5" fill={colors.stroke}/>
+      <circle cx="30" cy="34" r="1" fill={colors.accent}/>
+    </svg>,
+    // 2: 별 눈
+    <svg viewBox="0 0 60 60" key="2">
+      <ellipse cx="20" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <ellipse cx="40" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <text x="22" y="33" fontSize="6" fill={colors.stroke} textAnchor="middle">★</text>
+      <text x="38" y="33" fontSize="6" fill={colors.stroke} textAnchor="middle">★</text>
+      <path d="M28 37 Q30 39 32 37" stroke={colors.stroke} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>,
+    // 3: 잠 (zzz)
+    <svg viewBox="0 0 60 60" key="3">
+      <ellipse cx="20" cy="16" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5" transform="rotate(-15, 20, 16)"/>
+      <ellipse cx="40" cy="16" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5" transform="rotate(15, 40, 16)"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <path d="M22 30 Q22 32 24 30 M36 30 Q36 32 38 30" stroke={colors.stroke} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <text x="46" y="20" fontSize="9" fill={colors.stroke} fontFamily="monospace">z</text>
+      <text x="50" y="14" fontSize="6" fill={colors.stroke} fontFamily="monospace">z</text>
+    </svg>,
+    // 4: 하트
+    <svg viewBox="0 0 60 60" key="4">
+      <ellipse cx="20" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <ellipse cx="40" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <path d="M22 30 L26 28 L24 32 Z" fill={colors.accent} stroke={colors.stroke} strokeWidth="1"/>
+      <path d="M34 28 L38 30 L36 32 Z" fill={colors.accent} stroke={colors.stroke} strokeWidth="1"/>
+      <path d="M28 36 Q30 38 32 36" stroke={colors.stroke} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>,
+    // 5: 화남
+    <svg viewBox="0 0 60 60" key="5">
+      <ellipse cx="20" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <ellipse cx="40" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <path d="M21 28 L27 30 M33 30 L39 28" stroke={colors.stroke} strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="24" cy="32" r="1.5" fill={colors.stroke}/>
+      <circle cx="36" cy="32" r="1.5" fill={colors.stroke}/>
+      <path d="M27 38 L33 38" stroke={colors.stroke} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>,
+    // 6: 미소
+    <svg viewBox="0 0 60 60" key="6">
+      <ellipse cx="20" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <ellipse cx="40" cy="14" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <path d="M22 30 Q24 28 26 30 M34 30 Q36 28 38 30" stroke={colors.stroke} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <path d="M26 36 Q30 40 34 36" stroke={colors.stroke} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>,
+    // 7: 놀람
+    <svg viewBox="0 0 60 60" key="7">
+      <ellipse cx="20" cy="12" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <ellipse cx="40" cy="12" rx="5" ry="9" fill={colors.ear} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="30" cy="32" r="14" fill={colors.body} stroke={colors.stroke} strokeWidth="1.5"/>
+      <circle cx="24" cy="30" r="2" fill={colors.stroke}/>
+      <circle cx="36" cy="30" r="2" fill={colors.stroke}/>
+      <ellipse cx="30" cy="37" rx="2" ry="3" fill={colors.stroke}/>
+    </svg>,
+  ];
+
+  return variants[variant % variants.length];
+};
+
+function GoodsMessage({ msg, selected, setSelected, quantities, setQuantities, onIntent, onGoodsConfirm, onUpload, onGridConfirm, onOrder }) {
+  const [chosen, setChosen] = useState(new Set());
+
+  if (msg.sender === 'user') {
+    return <div className="snpg-msg user"><div className="snpg-bubble">{msg.content}</div></div>;
+  }
+
+  if (msg.type === 'text') {
+    return <div className="snpg-msg bot"><div className="snpg-bubble">{msg.content}</div></div>;
+  }
+
+  if (msg.type === 'free-input') {
+    return (
+      <div className="snpg-msg bot" style={{ maxWidth: '95%' }}>
+        <div className="snpg-free">
+          <div className="snpg-free-hint">{msg.placeholder}</div>
+          <div className="snpg-chips">
+            {msg.suggestions.map((s, i) => (
+              <button key={i} className="snpg-chip" onClick={() => onIntent(s)}>{s}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'goods-picker') {
+    const goods = [
+      { key: 'keyring', name: '아크릴 키링', desc: '40 × 40mm', emoji: '🔑' },
+      { key: 'stand', name: '아크릴 등신대', desc: '미니/대형', emoji: '🎎' },
+      { key: 'case', name: '폰케이스', desc: '맞춤 모델', emoji: '📱' },
+      { key: 'badge', name: '핀뱃지', desc: 'Ø44mm', emoji: '🎖️' },
+      { key: 'smarttok', name: '스마트톡', desc: '회전형', emoji: '✨' },
+      { key: 'banner', name: '미니배너', desc: '20×40cm', emoji: '🚩' },
+    ];
+    const toggle = (k) => {
+      const s = new Set(chosen);
+      if (s.has(k)) s.delete(k); else s.add(k);
+      setChosen(s);
+    };
+    const initialFour = ['keyring', 'stand', 'case', 'badge'];
+    return (
+      <div className="snpg-msg bot" style={{ maxWidth: '100%' }}>
+        <div className="snpg-goods">
+          {goods.map((g) => {
+            const isOn = chosen.has(g.key) || (chosen.size === 0 && initialFour.includes(g.key));
+            return (
+              <button key={g.key} className={`snpg-good ${isOn ? 'selected' : ''}`} onClick={() => toggle(g.key)}>
+                <div className="snpg-good-shape">{g.emoji}</div>
+                <div className="snpg-good-name">{g.name}</div>
+                <div className="snpg-good-desc">{g.desc}</div>
+                <div className="snpg-good-check"><Check size={11} strokeWidth={3}/></div>
+              </button>
+            );
+          })}
+        </div>
+        <button className="snpg-confirm-btn" onClick={() => {
+          const final = chosen.size > 0 ? [...chosen] : initialFour;
+          onGoodsConfirm(final.map(k => goods.find(g => g.key === k).name));
+        }}>
+          {chosen.size > 0 ? `${chosen.size}종 선택 완료` : '4종 모두 선택 (기본)'} →
+        </button>
+      </div>
+    );
+  }
+
+  if (msg.type === 'upload-zone') {
+    return (
+      <div className="snpg-msg bot" style={{ maxWidth: '95%' }}>
+        <button className="snpg-upload" onClick={onUpload}>
+          <div className="snpg-upload-icon"><Upload size={24} /></div>
+          <div className="snpg-upload-text">아트웍 일괄 업로드</div>
+          <div className="snpg-upload-sub">PNG · JPG · PSD · AI · SVG</div>
+        </button>
+      </div>
+    );
+  }
+
+  if (msg.type === 'ai-process') {
+    return (
+      <div className="snpg-msg bot" style={{ maxWidth: '90%' }}>
+        <div className="snpg-process">
+          <div className="snpg-process-title">
+            <Sparkles size={20} />
+            AI가 작업 중...
+          </div>
+          <div className="snpg-process-step">
+            <div className="check">✓</div>
+            <span>① 누끼 자동 제거 (8/8)</span>
+          </div>
+          <div className="snpg-process-step">
+            <div className="check">✓</div>
+            <span>② 굿즈별 사이즈 매칭</span>
+          </div>
+          <div className="snpg-process-step">
+            <div className="check">✓</div>
+            <span>③ 칼선 자동 생성</span>
+          </div>
+          <div className="snpg-process-step pending">
+            <div className="check">◌</div>
+            <span>④ 캐릭터-굿즈 최적 매칭...</span>
+          </div>
+          <div className="snpg-process-counter">
+            4종 × 8캐릭터 = 32개 시안 생성 중
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'design-grid') {
+    const products = [
+      { key: 'keyring', name: '🔑 아크릴 키링', count: 8, recommendation: '캐릭터 단독' },
+      { key: 'stand', name: '🎎 아크릴 등신대', count: 8, recommendation: '풀바디 비율' },
+      { key: 'case', name: '📱 폰케이스', count: 8, recommendation: '여백 활용' },
+      { key: 'badge', name: '🎖️ 핀뱃지', count: 8, recommendation: '원형 크롭' },
+    ];
+    const targetCount = { keyring: 5, stand: 2, case: 3, badge: 4 };
+    const toggle = (productKey, idx) => {
+      const id = `${productKey}-${idx}`;
+      const s = new Set(selected);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      setSelected(s);
+    };
+    const isSelected = (productKey, idx) => {
+      const id = `${productKey}-${idx}`;
+      // 기본 선택 상태
+      const defaults = {
+        keyring: [0, 1, 4, 6, 7],
+        stand: [0, 6],
+        case: [0, 2, 6],
+        badge: [0, 1, 4, 6],
+      };
+      if (selected.size === 0) {
+        return defaults[productKey]?.includes(idx);
+      }
+      return selected.has(id);
+    };
+
+    return (
+      <div className="snpg-msg bot" style={{ maxWidth: '100%' }}>
+        <div className="snpg-grid-wrap">
+          <div className="snpg-grid-head">
+            <h3>32개 시안 그리드</h3>
+            <span className="meta">AI 자동 생성 · 1.4s</span>
+          </div>
+
+          {products.map((p) => {
+            const productSelected = [...Array(p.count)].filter((_, i) => isSelected(p.key, i)).length;
+            return (
+              <div key={p.key} className="snpg-product-section">
+                <div className="snpg-product-head">
+                  <h4>{p.name}</h4>
+                  <span className="count">{productSelected || targetCount[p.key]}종 선택 · {p.recommendation}</span>
+                </div>
+                <div className="snpg-design-grid">
+                  {[...Array(p.count)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`snpg-design ${p.key} ${isSelected(p.key, i) ? 'selected' : ''}`}
+                      onClick={() => toggle(p.key, i)}
+                    >
+                      <div className="snpg-design-check"><Check size={11} strokeWidth={3} /></div>
+                      <div className="snpg-bunny-art">
+                        <BunnyArt variant={i} dark={p.key === 'case'} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="snpg-grid-foot">
+            <div className="summary">
+              총 <span className="num">14</span>종의 디자인 선택됨
+            </div>
+            <button className="snpg-confirm-btn" style={{ width: 'auto', padding: '12px 22px' }} onClick={onGridConfirm}>
+              수량 정하러 가기 →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'quantity-shipping') {
+    const items = [
+      { key: 'keyring', name: '아크릴 키링', sub: '5종 × ', emoji: '🔑', price: 4500 },
+      { key: 'stand', name: '아크릴 등신대', sub: '2종 × ', emoji: '🎎', price: 8000 },
+      { key: 'case', name: '폰케이스', sub: '3종 × ', emoji: '📱', price: 12000 },
+      { key: 'badge', name: '핀뱃지', sub: '4종 × ', emoji: '🎖️', price: 2500 },
+    ];
+
+    const updateQty = (key, delta) => {
+      setQuantities(prev => ({ ...prev, [key]: Math.max(1, prev[key] + delta) }));
+    };
+
+    const total = items.reduce((sum, item) => sum + (quantities[item.key] * item.price), 0);
+
+    return (
+      <div className="snpg-msg bot" style={{ maxWidth: '100%' }}>
+        <div className="snpg-qs">
+          <div className="snpg-qs-deadline">
+            <Calendar size={14} />
+            <span>마켓 일정: 토요일 (이번 주말)</span>
+            <strong>금요일까지 도착 필요</strong>
+          </div>
+
+          <div className="snpg-qs-list">
+            {items.map((item) => (
+              <div key={item.key} className="snpg-qs-row">
+                <div className="snpg-qs-icon">{item.emoji}</div>
+                <div className="snpg-qs-name">
+                  {item.name}
+                  <div className="sub">{item.sub}{quantities[item.key]}개씩</div>
+                </div>
+                <div className="snpg-qs-counter">
+                  <button onClick={() => updateQty(item.key, -1)}><Minus size={11} /></button>
+                  <span className="num">{quantities[item.key]}</span>
+                  <button onClick={() => updateQty(item.key, 1)}><Plus size={11} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="snpg-qs-shipping">
+            <button className="snpg-qs-ship-opt">
+              <span><Truck size={14} style={{ verticalAlign: 'middle', marginRight: 6 }}/> 금요일 도착 (AI 추천)</span>
+              <span>+5,000</span>
+            </button>
+          </div>
+
+          <div className="snpg-qs-total">
+            <div>
+              <div className="lbl">합계 (마켓용 일괄)</div>
+            </div>
+            <div className="price">{total.toLocaleString()}원</div>
+          </div>
+
+          <button className="snpg-qs-cta" onClick={onOrder}>
+            🎪 4종 한 번에 주문하기 →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === 'order-complete') {
+    return (
+      <div className="snpg-msg bot" style={{ maxWidth: '100%' }}>
+        <div className="snpg-complete">
+          <div className="snpg-complete-icon">
+            <Check size={32} strokeWidth={3} />
+          </div>
+          <h3>마켓에서 만나요!</h3>
+          <p>주문번호 #2026-G0429 · 금요일 오전 도착</p>
+
+          <div className="snpg-complete-stats">
+            <div className="snpg-complete-stat">
+              <div className="num">4</div>
+              <div className="lbl">Goods</div>
+            </div>
+            <div className="snpg-complete-stat">
+              <div className="num">14</div>
+              <div className="lbl">Designs</div>
+            </div>
+            <div className="snpg-complete-stat">
+              <div className="num">7'42"</div>
+              <div className="lbl">Total Time</div>
+            </div>
+          </div>
+
+          <div className="snpg-complete-saved">
+            <Sparkles size={14} />
+            'Bunny Doodle' 아트웍 → My IP 라이브러리에 저장됨
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<SnapsGoodsChat />);
+  </script>
+</body>
+</html>
