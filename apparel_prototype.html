@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>오프린트미 - 대량 구매 할인 계산기 프로토타입</title>
+<title>오프린트미 - 수량별 할인 계산기 프로토타입</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
 
@@ -443,9 +443,14 @@
     letter-spacing: -0.01em;
   }
   .bulk-save-amount {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    margin-top: 2px;
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-red);
+    background: #fdecea;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-top: 4px;
   }
 
   /* No discount state */
@@ -536,7 +541,7 @@
 <body>
 
 <div class="proto-badge">
-  PROTOTYPE <span>|</span> 오프린트미 상품 상세 — 대량 구매 할인 계산기
+  PROTOTYPE <span>|</span> 오프린트미 상품 상세 — 수량별 할인 계산기
 </div>
 
 <div class="page-wrapper">
@@ -626,7 +631,7 @@
             <path d="M9 14l2 2 4-4"/>
           </svg>
         </div>
-        <span class="bulk-calc-label">대량 구매 할인 안내</span>
+        <span class="bulk-calc-label">수량별 할인 안내</span>
         <span class="bulk-calc-badge">최대 7% 할인</span>
       </div>
       <svg class="bulk-calc-chevron" viewBox="0 0 20 20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round">
