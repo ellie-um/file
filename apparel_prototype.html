@@ -4,140 +4,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오프린트미 - 수량별 할인 계산기 프로토타입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   :root {
-    --bg: #ffffff;
-    --text-primary: #1a1a1a;
-    --text-secondary: #666666;
-    --text-tertiary: #999999;
-    --border: #e8e8e8;
-    --border-light: #f2f2f2;
-    --accent-blue: #2e4a9e;
-    --accent-red: #e53935;
-    --surface: #f7f7f8;
-    --black: #1a1a1a;
-    --white: #ffffff;
+    --bg: #ffffff; --text-primary: #1a1a1a; --text-secondary: #666666;
+    --text-tertiary: #999999; --border: #e8e8e8; --border-light: #f2f2f2;
+    --accent-blue: #2e4a9e; --accent-red: #e53935;
+    --surface: #f7f7f8; --black: #1a1a1a; --white: #ffffff;
   }
-
   body {
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
+    background: #f0f0f0; color: var(--text-primary);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Prototype Badge ── */
-  .proto-badge {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: var(--black);
-    color: var(--white);
-    text-align: center;
-    padding: 8px 16px;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+  /* ── Version Nav ── */
+  .version-nav {
+    position: sticky; top: 0; z-index: 100; background: var(--black);
+    display: flex; padding: 0;
   }
-  .proto-badge span { opacity: 0.5; }
+  .version-tab {
+    flex: 1; padding: 14px 16px; text-align: center;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 500;
+    color: rgba(255,255,255,0.5); cursor: pointer;
+    border: none; background: none; transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  .version-tab.active { color: #fff; border-bottom-color: #fff; font-weight: 600; }
+  .version-tab span { display: block; font-size: 11px; font-weight: 400; margin-top: 2px; opacity: 0.7; }
+  .version-panel { display: none; }
+  .version-panel.active { display: block; }
 
   /* ── Layout ── */
-  .page-wrapper {
-    max-width: 480px;
-    margin: 0 auto;
-    padding-top: 40px;
-  }
+  .page-wrapper { max-width: 480px; margin: 0 auto; background: var(--white); min-height: 100vh; }
 
-  /* ── Product Info (Simplified Context) ── */
-  .product-header {
-    padding: 20px 20px 0;
-  }
-  .product-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-  }
-  .product-rating {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 16px;
-  }
-  .stars {
-    display: flex;
-    gap: 1px;
-  }
-  .star {
-    width: 16px; height: 16px;
-    fill: #FFB800;
-  }
-  .star.half { fill: url(#halfGrad); }
-  .rating-text {
-    font-size: 13px;
-    color: var(--text-secondary);
-  }
-  .rating-text a {
-    color: var(--text-secondary);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
-  /* ── Info Badges ── */
-  .info-badges {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    margin-bottom: 16px;
-  }
-  .info-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-primary);
-  }
+  /* ── Product ── */
+  .product-header { padding: 20px 20px 0; }
+  .product-name { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .product-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+  .stars { display: flex; gap: 1px; }
+  .star { width: 16px; height: 16px; fill: #FFB800; }
+  .rating-text { font-size: 13px; color: var(--text-secondary); }
+  .rating-text a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: 2px; }
+  .info-badges { display: flex; gap: 12px; padding: 12px 0; margin-bottom: 16px; }
+  .info-badge { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .info-badge .icon {
-    width: 32px; height: 32px;
-    background: var(--surface);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 32px; height: 32px; background: var(--surface); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
   }
   .info-badge .icon svg { width: 16px; height: 16px; fill: var(--text-secondary); }
-
-  /* ── Color Selection ── */
   .option-section { padding: 0 20px; margin-bottom: 16px; }
-  .option-label {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 10px;
-    color: var(--text-primary);
-  }
+  .option-label { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
   .option-label span { color: var(--text-secondary); font-weight: 400; }
-  .color-swatches {
-    display: flex;
-    gap: 8px;
-  }
+  .color-swatches { display: flex; gap: 8px; }
   .swatch {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    position: relative;
+    width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent;
+    cursor: pointer; transition: border-color 0.15s; position: relative;
   }
   .swatch.active { border-color: var(--text-primary); }
-  .swatch::after {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    border-radius: 50%;
-  }
+  .swatch::after { content: ''; position: absolute; inset: 2px; border-radius: 50%; }
   .swatch[data-color="white"]::after { background: #f5f5f5; border: 1px solid #ddd; }
   .swatch[data-color="beige"]::after { background: #d4c5a0; }
   .swatch[data-color="black"]::after { background: #1a1a1a; }
@@ -145,691 +73,217 @@
   .swatch[data-color="navy"]::after { background: #1a2744; }
   .swatch[data-color="blue"]::after { background: #2e4a9e; }
   .swatch[data-color="red"]::after { background: #c0392b; }
+  .size-section { margin: 0 20px 16px; background: var(--surface); border-radius: 10px; padding: 14px 16px; }
+  .size-row { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .size-row .color-name { font-weight: 600; margin-right: 4px; }
+  .size-divider { color: var(--border); font-size: 12px; }
+  .size-link { font-size: 13px; color: var(--text-secondary); margin-top: 8px; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .notice { padding: 0 20px; margin-bottom: 20px; }
+  .notice-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .notice-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .price-section { padding: 20px; border-top: 1px solid var(--border-light); }
+  .price-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+  .price-value { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+  .price-option { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
 
-  /* ── Size Chips ── */
-  .size-section {
-    margin: 0 20px 16px;
-    background: var(--surface);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
-  .size-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: var(--text-primary);
-  }
-  .size-row .color-name {
-    font-weight: 600;
-    margin-right: 4px;
-  }
-  .size-divider {
-    color: var(--border);
-    font-size: 12px;
-  }
-  .size-link {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    cursor: pointer;
-  }
-
-  /* ── Notice ── */
-  .notice {
-    padding: 0 20px;
-    margin-bottom: 20px;
-  }
-  .notice-title {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .notice-text {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
-
-  /* ── Price ── */
-  .price-section {
-    padding: 20px;
-    border-top: 1px solid var(--border-light);
-  }
-  .price-label {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-  }
-  .price-value {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-  .price-option {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 4px;
-  }
-
-  /* ══════════════════════════════════════
-     ★ BULK PRICE CALCULATOR (NEW)
-     ══════════════════════════════════════ */
-  .bulk-calc {
-    margin: 0 20px 20px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-  }
-  .bulk-calc.open {
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
-
+  /* ── Bulk Calculator ── */
+  .bulk-calc { margin: 0 20px 20px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s; }
+  .bulk-calc.open { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
   .bulk-calc-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    background: var(--white);
-    transition: background 0.15s;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; cursor: pointer; user-select: none;
+    -webkit-tap-highlight-color: transparent; background: var(--white); transition: background 0.15s;
   }
-  .bulk-calc-toggle:hover {
-    background: #fafafa;
-  }
-  .bulk-calc-toggle-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .bulk-calc-icon {
-    width: 20px; height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .bulk-calc-icon svg {
-    width: 18px; height: 18px;
-    fill: none;
-    stroke: var(--text-primary);
-    stroke-width: 1.8;
-  }
-  .bulk-calc-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-  .bulk-calc-badge {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--accent-red);
-    background: #fdecea;
-    padding: 2px 8px;
-    border-radius: 10px;
-    letter-spacing: 0.01em;
-  }
-  .bulk-calc-chevron {
-    width: 20px; height: 20px;
-    transition: transform 0.25s ease;
-  }
-  .bulk-calc.open .bulk-calc-chevron {
-    transform: rotate(180deg);
-  }
-
-  .bulk-calc-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .bulk-calc.open .bulk-calc-body {
-    max-height: 400px;
-  }
-
-  .bulk-calc-content {
-    padding: 0 16px 20px;
-    border-top: 1px solid var(--border-light);
-  }
-
-  .bulk-calc-disclaimer {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    margin: 14px 0 18px;
-    line-height: 1.5;
-  }
-
-  /* Slider Track */
-  .slider-container {
-    position: relative;
-    padding: 0 0 8px;
-  }
-  .slider-track {
-    position: relative;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin: 12px 0;
-    cursor: pointer;
-  }
-  .slider-fill {
-    position: absolute;
-    left: 0; top: 0;
-    height: 100%;
-    background: var(--black);
-    border-radius: 2px;
-    transition: width 0.15s ease;
-  }
+  .bulk-calc-toggle:hover { background: #fafafa; }
+  .bulk-calc-toggle-left { display: flex; align-items: center; gap: 8px; }
+  .bulk-calc-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+  .bulk-calc-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--text-primary); stroke-width: 1.8; }
+  .bulk-calc-label { font-size: 14px; font-weight: 600; }
+  .bulk-calc-badge { font-size: 11px; font-weight: 600; color: var(--accent-red); background: #fdecea; padding: 2px 8px; border-radius: 10px; }
+  .bulk-calc-chevron { width: 20px; height: 20px; transition: transform 0.25s ease; }
+  .bulk-calc.open .bulk-calc-chevron { transform: rotate(180deg); }
+  .bulk-calc-body { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+  .bulk-calc.open .bulk-calc-body { max-height: 400px; }
+  .bulk-calc-content { padding: 0 16px 20px; border-top: 1px solid var(--border-light); }
+  .bulk-calc-disclaimer { font-size: 12px; color: var(--text-tertiary); margin: 14px 0 18px; line-height: 1.5; }
+  .slider-container { position: relative; padding: 0 0 8px; }
+  .slider-track { position: relative; height: 4px; background: var(--border); border-radius: 2px; margin: 12px 0; cursor: pointer; }
+  .slider-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--black); border-radius: 2px; transition: width 0.15s ease; }
   .slider-thumb {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 22px; height: 22px;
-    background: var(--black);
-    border-radius: 50%;
-    cursor: grab;
-    z-index: 2;
-    transition: left 0.15s ease, box-shadow 0.15s;
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 22px; height: 22px; background: var(--black); border-radius: 50%;
+    cursor: grab; z-index: 2; transition: left 0.15s ease, box-shadow 0.15s;
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   }
-  .slider-thumb:active {
-    cursor: grabbing;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-
-  /* Snap dots */
-  .slider-snaps {
-    position: absolute;
-    top: 50%;
-    left: 0; right: 0;
-    transform: translateY(-50%);
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-  }
-  .snap-dot {
-    width: 8px; height: 8px;
-    background: var(--white);
-    border: 2px solid var(--border);
-    border-radius: 50%;
-    position: relative;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .snap-dot.active {
-    background: var(--black);
-    border-color: var(--black);
-  }
-
-  /* Snap labels */
-  .slider-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 6px;
-  }
-  .snap-label {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    text-align: center;
-    transform: translateX(-2px);
-    transition: color 0.15s, font-weight 0.15s;
-  }
-  .snap-label.active {
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
-  /* Quantity display */
-  .quantity-display {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: 4px;
-    gap: 4px;
-  }
-  .quantity-num {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-  .quantity-unit {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  /* Price result */
-  .bulk-price-result {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-top: 18px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-light);
-  }
-  .bulk-price-left {}
-  .bulk-price-original {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    text-decoration: line-through;
-    margin-bottom: 2px;
-  }
-  .bulk-price-discounted {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-  }
-  .bulk-price-per {
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 400;
-  }
-  .bulk-price-right {
-    text-align: right;
-  }
-  .bulk-discount-rate {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--accent-red);
-    letter-spacing: -0.01em;
-  }
-  .bulk-save-amount {
-    display: inline-block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent-red);
-    background: #fdecea;
-    padding: 3px 10px;
-    border-radius: 6px;
-    margin-top: 4px;
-  }
-
-  /* No discount state */
+  .slider-thumb:active { cursor: grabbing; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transform: translate(-50%, -50%) scale(1.1); }
+  .slider-snaps { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; pointer-events: none; }
+  .snap-dot { width: 8px; height: 8px; background: var(--white); border: 2px solid var(--border); border-radius: 50%; transition: border-color 0.15s, background 0.15s; }
+  .snap-dot.active { background: var(--black); border-color: var(--black); }
+  .slider-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+  .snap-label { font-size: 11px; color: var(--text-tertiary); text-align: center; transform: translateX(-2px); transition: color 0.15s, font-weight 0.15s; }
+  .snap-label.active { color: var(--text-primary); font-weight: 600; }
+  .quantity-display { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 4px; gap: 4px; }
+  .quantity-num { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .quantity-unit { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+  .bulk-price-result { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-light); }
+  .bulk-price-original { font-size: 13px; color: var(--text-tertiary); text-decoration: line-through; margin-bottom: 2px; }
+  .bulk-price-discounted { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .bulk-price-per { font-size: 12px; color: var(--text-secondary); font-weight: 400; }
+  .bulk-price-right { text-align: right; }
+  .bulk-discount-rate { font-size: 18px; font-weight: 700; color: var(--accent-red); letter-spacing: -0.01em; }
+  .bulk-save-amount { display: inline-block; font-size: 13px; font-weight: 600; color: var(--accent-red); background: #fdecea; padding: 3px 10px; border-radius: 6px; margin-top: 4px; }
   .bulk-price-result.no-discount .bulk-price-original { display: none; }
   .bulk-price-result.no-discount .bulk-discount-rate { display: none; }
   .bulk-price-result.no-discount .bulk-save-amount { display: none; }
 
-  /* ══════════════════════════════════════ */
-
   /* ── CTA ── */
   .cta-section { padding: 0 20px 20px; }
   .cta-btn {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    background: var(--black);
-    color: var(--white);
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.15s, transform 0.1s;
+    display: block; width: 100%; padding: 16px; background: var(--black); color: var(--white);
+    border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif; transition: background 0.15s, transform 0.1s;
   }
-  .cta-btn:active {
-    transform: scale(0.985);
-    background: #333;
-  }
+  .cta-btn:active { transform: scale(0.985); background: #333; }
 
   /* ── Review Banner ── */
   .review-banner {
-    margin: 0 20px 30px;
-    background: #3b3fce;
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: var(--white);
+    margin: 0 20px 30px; background: #3b3fce; border-radius: 12px; padding: 20px;
+    display: flex; align-items: center; justify-content: space-between; color: var(--white);
   }
-  .review-banner-title {
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-  .review-banner-desc {
-    font-size: 12px;
-    opacity: 0.8;
-    line-height: 1.5;
-  }
-  .review-banner-img {
-    width: 64px; height: 64px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    flex-shrink: 0;
-  }
-
-  /* ── Divider label ── */
-  .section-divider {
-    text-align: center;
-    padding: 16px 20px 8px;
-  }
-  .divider-label {
-    display: inline-block;
-    font-size: 11px;
-    color: var(--accent-red);
-    background: #fdecea;
-    padding: 3px 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-
-  /* Context dimming for existing elements */
-  .existing { opacity: 1; }
-
-  /* ── Desktop tweaks ── */
-  @media (min-width: 768px) {
-    .page-wrapper { max-width: 480px; }
-  }
+  .review-banner-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .review-banner-desc { font-size: 12px; opacity: 0.8; line-height: 1.5; }
+  .review-banner-img { width: 64px; height: 64px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
 </style>
 </head>
 <body>
 
-<div class="proto-badge">
-  PROTOTYPE <span>|</span> 오프린트미 상품 상세 — 수량별 할인 계산기
-</div>
+<nav class="version-nav">
+  <button class="version-tab active" onclick="switchVersion('A', this)">안 A — CTA 상단 배치<span>토글 닫힘(기본)</span></button>
+  <button class="version-tab" onclick="switchVersion('B', this)">안 B — CTA 하단 배치<span>토글 펼침(기본)</span></button>
+</nav>
 
-<div class="page-wrapper">
-
-  <!-- Existing: Product Header -->
-  <div class="product-header existing">
+<!-- VERSION A: Calculator ABOVE CTA, Collapsed -->
+<div class="version-panel active" id="versionA"><div class="page-wrapper">
+  <div class="product-header">
     <div class="product-name">프린트스타 쭈리 맨투맨</div>
-    <div class="product-rating">
-      <div class="stars">
-        <svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg>
-        <svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg>
-        <svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg>
-        <svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg>
-        <svg class="star" viewBox="0 0 16 16" style="fill:#ddd"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg>
-      </div>
-      <div class="rating-text">4.9 <a>(리뷰 319)</a></div>
-    </div>
-
+    <div class="product-rating"><div class="stars"><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16" style="fill:#ddd"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg></div><div class="rating-text">4.9 <a>(리뷰 319)</a></div></div>
     <div class="info-badges">
-      <div class="info-badge">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-        </div>
-        <div>5만원 이상 주문 시<br>배송비 무료</div>
-      </div>
-      <div class="info-badge">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-        </div>
-        <div>지금 주문 시<br><u>05/08(금) 출고 예정</u></div>
-      </div>
+      <div class="info-badge"><div class="icon"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div><div>5만원 이상 주문 시<br>배송비 무료</div></div>
+      <div class="info-badge"><div class="icon"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></div><div>지금 주문 시<br><u>05/08(금) 출고 예정</u></div></div>
     </div>
   </div>
+  <div class="option-section"><div class="option-label">색상 <span>(블루)</span></div><div class="color-swatches"><div class="swatch" data-color="white"></div><div class="swatch" data-color="beige"></div><div class="swatch" data-color="black"></div><div class="swatch" data-color="gray"></div><div class="swatch" data-color="navy"></div><div class="swatch active" data-color="blue"></div><div class="swatch" data-color="red"></div></div></div>
+  <div class="size-section"><div class="size-row"><span class="color-name">블루</span> S <span class="size-divider">/</span> M <span class="size-divider">/</span> L <span class="size-divider">/</span> XL <span class="size-divider">/</span> 2XL</div><div class="size-link">전체 색상/사이즈 보기 ›</div></div>
+  <div class="notice"><div class="notice-title">안내</div><div class="notice-text">• 사이즈 선택은 편집 단계에서 진행됩니다.</div></div>
+  <div class="price-section"><div class="price-label">총 금액</div><div class="price-value">27,900원</div><div class="price-option">• 옵션 : 블루</div></div>
 
-  <!-- Existing: Color Selection -->
-  <div class="option-section existing">
-    <div class="option-label">색상 <span>(블루)</span></div>
-    <div class="color-swatches">
-      <div class="swatch" data-color="white"></div>
-      <div class="swatch" data-color="beige"></div>
-      <div class="swatch" data-color="black"></div>
-      <div class="swatch" data-color="gray"></div>
-      <div class="swatch" data-color="navy"></div>
-      <div class="swatch active" data-color="blue"></div>
-      <div class="swatch" data-color="red"></div>
+  <!-- ★ A: ABOVE CTA, Collapsed -->
+  <div class="bulk-calc" id="bulkCalcA">
+    <div class="bulk-calc-toggle" onclick="toggleCalc('A')">
+      <div class="bulk-calc-toggle-left"><div class="bulk-calc-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div><span class="bulk-calc-label">수량별 할인 안내</span><span class="bulk-calc-badge">최대 7% 할인</span></div>
+      <svg class="bulk-calc-chevron" viewBox="0 0 20 20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><polyline points="5,8 10,13 15,8"/></svg>
+    </div>
+    <div class="bulk-calc-body"><div class="bulk-calc-content">
+      <div class="bulk-calc-disclaimer">* 예상 금액이며, 실제 가격은 선택 옵션에 따라 달라질 수 있습니다.</div>
+      <div class="quantity-display"><span class="quantity-num" id="qtyA">1</span><span class="quantity-unit">개</span></div>
+      <div class="slider-container"><div class="slider-track" id="trackA"><div class="slider-fill" id="fillA"></div><div class="slider-snaps" id="dotsA"></div><div class="slider-thumb" id="thumbA"></div></div><div class="slider-labels" id="labelsA"></div></div>
+      <div class="bulk-price-result" id="resultA"><div class="bulk-price-left"><div class="bulk-price-original" id="origA">27,900원</div><div class="bulk-price-discounted"><span id="discA">27,900</span><span class="bulk-price-per">원 / 개</span></div></div><div class="bulk-price-right"><div class="bulk-discount-rate" id="rateA">0%</div><div class="bulk-save-amount" id="saveA"></div></div></div>
+    </div></div>
+  </div>
+
+  <div class="cta-section"><button class="cta-btn">직접 만들기</button></div>
+  <div class="review-banner"><div><div class="review-banner-title">All Order Review</div><div class="review-banner-desc">그대로 찍지 않습니다. '제대로' 만듭니다.<br>오프린트미 어패럴만의 안심 체크 시스템</div></div><div class="review-banner-img">👕</div></div>
+</div></div>
+
+<!-- VERSION B: Calculator BELOW CTA, Expanded -->
+<div class="version-panel" id="versionB"><div class="page-wrapper">
+  <div class="product-header">
+    <div class="product-name">프린트스타 쭈리 맨투맨</div>
+    <div class="product-rating"><div class="stars"><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg><svg class="star" viewBox="0 0 16 16" style="fill:#ddd"><polygon points="8,1 10.2,5.5 15,6.2 11.5,9.6 12.4,14.4 8,12 3.6,14.4 4.5,9.6 1,6.2 5.8,5.5"/></svg></div><div class="rating-text">4.9 <a>(리뷰 319)</a></div></div>
+    <div class="info-badges">
+      <div class="info-badge"><div class="icon"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div><div>5만원 이상 주문 시<br>배송비 무료</div></div>
+      <div class="info-badge"><div class="icon"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></div><div>지금 주문 시<br><u>05/08(금) 출고 예정</u></div></div>
     </div>
   </div>
+  <div class="option-section"><div class="option-label">색상 <span>(블루)</span></div><div class="color-swatches"><div class="swatch" data-color="white"></div><div class="swatch" data-color="beige"></div><div class="swatch" data-color="black"></div><div class="swatch" data-color="gray"></div><div class="swatch" data-color="navy"></div><div class="swatch active" data-color="blue"></div><div class="swatch" data-color="red"></div></div></div>
+  <div class="size-section"><div class="size-row"><span class="color-name">블루</span> S <span class="size-divider">/</span> M <span class="size-divider">/</span> L <span class="size-divider">/</span> XL <span class="size-divider">/</span> 2XL</div><div class="size-link">전체 색상/사이즈 보기 ›</div></div>
+  <div class="notice"><div class="notice-title">안내</div><div class="notice-text">• 사이즈 선택은 편집 단계에서 진행됩니다.</div></div>
+  <div class="price-section"><div class="price-label">총 금액</div><div class="price-value">27,900원</div><div class="price-option">• 옵션 : 블루</div></div>
 
-  <!-- Existing: Size -->
-  <div class="size-section existing">
-    <div class="size-row">
-      <span class="color-name">블루</span>
-      S <span class="size-divider">/</span>
-      M <span class="size-divider">/</span>
-      L <span class="size-divider">/</span>
-      XL <span class="size-divider">/</span>
-      2XL
+  <div class="cta-section"><button class="cta-btn">직접 만들기</button></div>
+
+  <!-- ★ B: BELOW CTA, Expanded default -->
+  <div class="bulk-calc open" id="bulkCalcB">
+    <div class="bulk-calc-toggle" onclick="toggleCalc('B')">
+      <div class="bulk-calc-toggle-left"><div class="bulk-calc-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div><span class="bulk-calc-label">수량별 할인 안내</span><span class="bulk-calc-badge">최대 7% 할인</span></div>
+      <svg class="bulk-calc-chevron" viewBox="0 0 20 20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><polyline points="5,8 10,13 15,8"/></svg>
     </div>
-    <div class="size-link">전체 색상/사이즈 보기 ›</div>
+    <div class="bulk-calc-body"><div class="bulk-calc-content">
+      <div class="bulk-calc-disclaimer">* 예상 금액이며, 실제 가격은 선택 옵션에 따라 달라질 수 있습니다.</div>
+      <div class="quantity-display"><span class="quantity-num" id="qtyB">1</span><span class="quantity-unit">개</span></div>
+      <div class="slider-container"><div class="slider-track" id="trackB"><div class="slider-fill" id="fillB"></div><div class="slider-snaps" id="dotsB"></div><div class="slider-thumb" id="thumbB"></div></div><div class="slider-labels" id="labelsB"></div></div>
+      <div class="bulk-price-result" id="resultB"><div class="bulk-price-left"><div class="bulk-price-original" id="origB">27,900원</div><div class="bulk-price-discounted"><span id="discB">27,900</span><span class="bulk-price-per">원 / 개</span></div></div><div class="bulk-price-right"><div class="bulk-discount-rate" id="rateB">0%</div><div class="bulk-save-amount" id="saveB"></div></div></div>
+    </div></div>
   </div>
 
-  <!-- Existing: Notice -->
-  <div class="notice existing">
-    <div class="notice-title">안내</div>
-    <div class="notice-text">• 사이즈 선택은 편집 단계에서 진행됩니다.</div>
-  </div>
-
-  <!-- Existing: Price -->
-  <div class="price-section existing">
-    <div class="price-label">총 금액</div>
-    <div class="price-value">27,900원</div>
-    <div class="price-option">• 옵션 : 블루</div>
-  </div>
-
-  <!-- ★ NEW: Bulk Price Calculator ★ -->
-  <div class="section-divider">
-    <span class="divider-label">✦ NEW FEATURE</span>
-  </div>
-
-  <div class="bulk-calc" id="bulkCalc">
-    <div class="bulk-calc-toggle" id="bulkToggle">
-      <div class="bulk-calc-toggle-left">
-        <div class="bulk-calc-icon">
-          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-            <rect x="9" y="3" width="6" height="4" rx="1"/>
-            <path d="M9 14l2 2 4-4"/>
-          </svg>
-        </div>
-        <span class="bulk-calc-label">수량별 할인 안내</span>
-        <span class="bulk-calc-badge">최대 7% 할인</span>
-      </div>
-      <svg class="bulk-calc-chevron" viewBox="0 0 20 20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round">
-        <polyline points="5,8 10,13 15,8"/>
-      </svg>
-    </div>
-
-    <div class="bulk-calc-body">
-      <div class="bulk-calc-content">
-        <div class="bulk-calc-disclaimer">
-          * 예상 금액이며, 실제 가격은 선택 옵션에 따라 달라질 수 있습니다.
-        </div>
-
-        <!-- Quantity Display -->
-        <div class="quantity-display">
-          <span class="quantity-num" id="qtyDisplay">1</span>
-          <span class="quantity-unit">개</span>
-        </div>
-
-        <!-- Slider -->
-        <div class="slider-container">
-          <div class="slider-track" id="sliderTrack">
-            <div class="slider-fill" id="sliderFill"></div>
-            <div class="slider-snaps" id="snapDots"></div>
-            <div class="slider-thumb" id="sliderThumb"></div>
-          </div>
-          <div class="slider-labels" id="snapLabels"></div>
-        </div>
-
-        <!-- Price Result -->
-        <div class="bulk-price-result" id="priceResult">
-          <div class="bulk-price-left">
-            <div class="bulk-price-original" id="originalPrice">27,900원</div>
-            <div class="bulk-price-discounted">
-              <span id="discountedPrice">27,900</span><span class="bulk-price-per">원 / 개</span>
-            </div>
-          </div>
-          <div class="bulk-price-right">
-            <div class="bulk-discount-rate" id="discountRate">0%</div>
-            <div class="bulk-save-amount" id="saveAmount"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Existing: CTA -->
-  <div class="cta-section existing">
-    <button class="cta-btn">직접 만들기</button>
-  </div>
-
-  <!-- Existing: Review Banner -->
-  <div class="review-banner existing">
-    <div>
-      <div class="review-banner-title">All Order Review</div>
-      <div class="review-banner-desc">
-        그대로 찍지 않습니다. '제대로' 만듭니다.<br>
-        오프린트미 어패럴만의 안심 체크 시스템
-      </div>
-    </div>
-    <div class="review-banner-img">👕</div>
-  </div>
-
-</div>
+  <div class="review-banner"><div><div class="review-banner-title">All Order Review</div><div class="review-banner-desc">그대로 찍지 않습니다. '제대로' 만듭니다.<br>오프린트미 어패럴만의 안심 체크 시스템</div></div><div class="review-banner-img">👕</div></div>
+</div></div>
 
 <script>
-  // ── Config: Discount tiers from admin ──
-  const BASE_PRICE = 27900;
+  function switchVersion(v, btn) {
+    document.querySelectorAll('.version-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.version-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('version' + v).classList.add('active');
+  }
+  function toggleCalc(id) { document.getElementById('bulkCalc' + id).classList.toggle('open'); }
+
+  const BASE = 27900;
   const TIERS = [
-    { min: 1,   max: 4,   productDisc: 0,  optionDisc: 0  },
-    { min: 5,   max: 9,   productDisc: 3,  optionDisc: 5  },
-    { min: 10,  max: 19,  productDisc: 5,  optionDisc: 10 },
-    { min: 20,  max: 49,  productDisc: 5,  optionDisc: 15 },
-    { min: 50,  max: 99,  productDisc: 7,  optionDisc: 20 },
-    { min: 100, max: 199, productDisc: 10, optionDisc: 25 },
+    { min:1, max:4, pd:0, od:0 }, { min:5, max:9, pd:3, od:5 },
+    { min:10, max:19, pd:5, od:10 }, { min:20, max:49, pd:5, od:15 },
+    { min:50, max:99, pd:7, od:20 }, { min:100, max:199, pd:10, od:25 },
   ];
+  const SNAPS = TIERS.map(t => t.min);
 
-  const SNAP_POINTS = TIERS.map(t => t.min);
-  let currentSnap = 0;
+  ['A','B'].forEach(id => {
+    let snap = 0;
+    const el = k => document.getElementById(k + id);
+    const track = el('track'), fill = el('fill'), thumb = el('thumb'),
+          dots = el('dots'), labels = el('labels'), qty = el('qty'),
+          orig = el('orig'), disc = el('disc'), rate = el('rate'),
+          save = el('save'), result = el('result');
 
-  // ── DOM ──
-  const bulkCalc = document.getElementById('bulkCalc');
-  const bulkToggle = document.getElementById('bulkToggle');
-  const sliderTrack = document.getElementById('sliderTrack');
-  const sliderFill = document.getElementById('sliderFill');
-  const sliderThumb = document.getElementById('sliderThumb');
-  const snapDotsContainer = document.getElementById('snapDots');
-  const snapLabelsContainer = document.getElementById('snapLabels');
-  const qtyDisplay = document.getElementById('qtyDisplay');
-  const originalPrice = document.getElementById('originalPrice');
-  const discountedPrice = document.getElementById('discountedPrice');
-  const discountRate = document.getElementById('discountRate');
-  const saveAmount = document.getElementById('saveAmount');
-  const priceResult = document.getElementById('priceResult');
-
-  // ── Toggle ──
-  bulkToggle.addEventListener('click', () => {
-    bulkCalc.classList.toggle('open');
-  });
-
-  // Auto-open for prototype
-  setTimeout(() => { bulkCalc.classList.add('open'); }, 600);
-
-  // ── Build snap dots & labels ──
-  SNAP_POINTS.forEach((val, i) => {
-    // Dot
-    const dot = document.createElement('div');
-    dot.className = 'snap-dot' + (i === 0 ? ' active' : '');
-    snapDotsContainer.appendChild(dot);
-
-    // Label
-    const label = document.createElement('div');
-    label.className = 'snap-label' + (i === 0 ? ' active' : '');
-    label.textContent = val;
-    snapLabelsContainer.appendChild(label);
-  });
-
-  // ── Slider logic ──
-  function getSnapPosition(index) {
-    return index / (SNAP_POINTS.length - 1) * 100;
-  }
-
-  function findClosestSnap(pct) {
-    let closest = 0;
-    let minDist = Infinity;
-    SNAP_POINTS.forEach((_, i) => {
-      const pos = getSnapPosition(i);
-      const dist = Math.abs(pct - pos);
-      if (dist < minDist) { minDist = dist; closest = i; }
-    });
-    return closest;
-  }
-
-  function updateSlider(snapIndex) {
-    currentSnap = snapIndex;
-    const pct = getSnapPosition(snapIndex);
-    sliderThumb.style.left = pct + '%';
-    sliderFill.style.width = pct + '%';
-
-    // Update dots
-    document.querySelectorAll('.snap-dot').forEach((dot, i) => {
-      dot.classList.toggle('active', i <= snapIndex);
-    });
-    document.querySelectorAll('.snap-label').forEach((label, i) => {
-      label.classList.toggle('active', i === snapIndex);
+    SNAPS.forEach((v, i) => {
+      const d = document.createElement('div'); d.className = 'snap-dot' + (i===0?' active':''); dots.appendChild(d);
+      const l = document.createElement('div'); l.className = 'snap-label' + (i===0?' active':''); l.textContent = v; labels.appendChild(l);
     });
 
-    // Update price
-    const tier = TIERS[snapIndex];
-    const qty = tier.min;
-    qtyDisplay.textContent = qty;
+    const pos = i => i/(SNAPS.length-1)*100;
+    const closest = p => { let c=0,m=Infinity; SNAPS.forEach((_,i)=>{ const d=Math.abs(p-pos(i)); if(d<m){m=d;c=i;} }); return c; };
 
-    // Calculate (simplified: using productDisc as combined rate for prototype)
-    const combinedDisc = Math.max(tier.productDisc, tier.optionDisc);
-    const discPrice = Math.round(BASE_PRICE * (1 - combinedDisc / 100));
-    const saved = BASE_PRICE - discPrice;
-
-    if (combinedDisc === 0) {
-      priceResult.classList.add('no-discount');
-      discountedPrice.textContent = BASE_PRICE.toLocaleString();
-    } else {
-      priceResult.classList.remove('no-discount');
-      originalPrice.textContent = BASE_PRICE.toLocaleString() + '원';
-      discountedPrice.textContent = discPrice.toLocaleString();
-      discountRate.textContent = combinedDisc + '% 할인';
-      saveAmount.textContent = saved.toLocaleString() + '원 절약';
+    function upd(idx) {
+      snap = idx; const pct = pos(idx);
+      thumb.style.left = pct+'%'; fill.style.width = pct+'%';
+      dots.querySelectorAll('.snap-dot').forEach((d,i) => d.classList.toggle('active', i<=idx));
+      labels.querySelectorAll('.snap-label').forEach((l,i) => l.classList.toggle('active', i===idx));
+      const t = TIERS[idx]; qty.textContent = t.min;
+      const dc = Math.max(t.pd, t.od), pr = Math.round(BASE*(1-dc/100)), sv = BASE-pr;
+      if(dc===0) { result.classList.add('no-discount'); disc.textContent = BASE.toLocaleString(); }
+      else { result.classList.remove('no-discount'); orig.textContent=BASE.toLocaleString()+'원'; disc.textContent=pr.toLocaleString(); rate.textContent=dc+'% 할인'; save.textContent=sv.toLocaleString()+'원 절약'; }
     }
-  }
+    upd(0);
 
-  // Initial state
-  updateSlider(0);
-
-  // ── Drag handling ──
-  let isDragging = false;
-
-  function handleMove(clientX) {
-    const rect = sliderTrack.getBoundingClientRect();
-    let pct = ((clientX - rect.left) / rect.width) * 100;
-    pct = Math.max(0, Math.min(100, pct));
-    const snapIdx = findClosestSnap(pct);
-    if (snapIdx !== currentSnap) updateSlider(snapIdx);
-  }
-
-  sliderThumb.addEventListener('mousedown', (e) => { isDragging = true; e.preventDefault(); });
-  sliderThumb.addEventListener('touchstart', (e) => { isDragging = true; }, { passive: true });
-
-  document.addEventListener('mousemove', (e) => { if (isDragging) handleMove(e.clientX); });
-  document.addEventListener('touchmove', (e) => { if (isDragging) handleMove(e.touches[0].clientX); }, { passive: true });
-
-  document.addEventListener('mouseup', () => { isDragging = false; });
-  document.addEventListener('touchend', () => { isDragging = false; });
-
-  // Click on track
-  sliderTrack.addEventListener('click', (e) => {
-    if (e.target === sliderThumb) return;
-    handleMove(e.clientX);
+    let drag = false;
+    const mv = cx => { const r=track.getBoundingClientRect(); let p=((cx-r.left)/r.width)*100; p=Math.max(0,Math.min(100,p)); const s=closest(p); if(s!==snap) upd(s); };
+    thumb.addEventListener('mousedown', e => { drag=true; e.preventDefault(); });
+    thumb.addEventListener('touchstart', () => { drag=true; }, {passive:true});
+    document.addEventListener('mousemove', e => { if(drag) mv(e.clientX); });
+    document.addEventListener('touchmove', e => { if(drag) mv(e.touches[0].clientX); }, {passive:true});
+    document.addEventListener('mouseup', () => { drag=false; });
+    document.addEventListener('touchend', () => { drag=false; });
+    track.addEventListener('click', e => { if(e.target!==thumb) mv(e.clientX); });
   });
 </script>
-
 </body>
 </html>
