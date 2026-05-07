@@ -104,8 +104,7 @@
   .bulk-calc.open .bulk-calc-chevron { transform: rotate(180deg); }
   .bulk-calc-body { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
   .bulk-calc.open .bulk-calc-body { max-height: 400px; }
-  .bulk-calc-content { padding: 0 16px 20px; border-top: 1px solid var(--border-light); }
-  .bulk-calc-disclaimer { font-size: 12px; color: var(--text-tertiary); margin: 14px 0 18px; line-height: 1.5; }
+  .bulk-calc-content { padding: 0 16px 16px; border-top: 1px solid var(--border-light); }
   .slider-container { position: relative; padding: 0 0 8px; }
   .slider-track { position: relative; height: 4px; background: var(--border); border-radius: 2px; margin: 12px 0; cursor: pointer; }
   .slider-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--black); border-radius: 2px; transition: width 0.15s ease; }
@@ -122,10 +121,10 @@
   .slider-labels { display: flex; justify-content: space-between; margin-top: 6px; }
   .snap-label { font-size: 11px; color: var(--text-tertiary); text-align: center; transform: translateX(-2px); transition: color 0.15s, font-weight 0.15s; }
   .snap-label.active { color: var(--text-primary); font-weight: 600; }
-  .quantity-display { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 4px; gap: 4px; }
+  .quantity-display { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 2px; margin-top: 14px; gap: 4px; }
   .quantity-num { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
   .quantity-unit { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-  .bulk-price-result { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-light); }
+  .bulk-price-result { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-light); }
   .bulk-price-original { font-size: 13px; color: var(--text-tertiary); text-decoration: line-through; margin-bottom: 2px; }
   .bulk-price-discounted { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
   .bulk-price-per { font-size: 12px; color: var(--text-secondary); font-weight: 400; }
@@ -184,7 +183,6 @@
       <svg class="bulk-calc-chevron" viewBox="0 0 20 20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><polyline points="5,8 10,13 15,8"/></svg>
     </div>
     <div class="bulk-calc-body"><div class="bulk-calc-content">
-      <div class="bulk-calc-disclaimer">* 예상 금액이며, 실제 가격은 선택 옵션에 따라 달라질 수 있습니다.</div>
       <div class="quantity-display"><span class="quantity-num" id="qtyA">1</span><span class="quantity-unit">개</span></div>
       <div class="slider-container"><div class="slider-track" id="trackA"><div class="slider-fill" id="fillA"></div><div class="slider-snaps" id="dotsA"></div><div class="slider-thumb" id="thumbA"></div></div><div class="slider-labels" id="labelsA"></div></div>
       <div class="bulk-price-result" id="resultA"><div class="bulk-price-left"><div class="bulk-price-original" id="origA">27,900원</div><div class="bulk-price-discounted"><span id="discA">27,900</span><span class="bulk-price-per">원 / 개</span></div></div><div class="bulk-price-right"><div class="bulk-discount-rate" id="rateA">0%</div><div class="bulk-save-amount" id="saveA"></div></div></div>
@@ -219,7 +217,6 @@
       <svg class="bulk-calc-chevron" viewBox="0 0 20 20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round"><polyline points="5,8 10,13 15,8"/></svg>
     </div>
     <div class="bulk-calc-body"><div class="bulk-calc-content">
-      <div class="bulk-calc-disclaimer">* 예상 금액이며, 실제 가격은 선택 옵션에 따라 달라질 수 있습니다.</div>
       <div class="quantity-display"><span class="quantity-num" id="qtyB">1</span><span class="quantity-unit">개</span></div>
       <div class="slider-container"><div class="slider-track" id="trackB"><div class="slider-fill" id="fillB"></div><div class="slider-snaps" id="dotsB"></div><div class="slider-thumb" id="thumbB"></div></div><div class="slider-labels" id="labelsB"></div></div>
       <div class="bulk-price-result" id="resultB"><div class="bulk-price-left"><div class="bulk-price-original" id="origB">27,900원</div><div class="bulk-price-discounted"><span id="discB">27,900</span><span class="bulk-price-per">원 / 개</span></div></div><div class="bulk-price-right"><div class="bulk-discount-rate" id="rateB">0%</div><div class="bulk-save-amount" id="saveB"></div></div></div>
